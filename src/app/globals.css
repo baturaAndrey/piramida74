@@ -1,7 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Тёмной темы нет: класс .dark нигде не выставляется, dark:-варианты не срабатывают */
+@custom-variant dark (&:is(.dark *));
+
 @theme inline {
+  /* --- семантические токены shadcn --- */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -33,82 +37,100 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* --- клубные токены (значения прямо здесь: они не меняются по темам) --- */
+  --color-primary-dark: #13442e; /* hover основного зелёного */
+  --color-nav: #f5f8f9; /* закреплённая шапка, мобильное меню */
+  --color-footer: #1a1a1a;
+  --color-subtle: #6c6c6c; /* текст акций, мелкий текст с контрастом AA */
+  --color-bar-text: #9b9b9b; /* текст в блоке бара (на тёмном фоне) */
+  --color-accent-red: #de2d26; /* «Узнать условия» */
+  --color-date: #d43228; /* даты турниров */
+  --color-badge: #fecb17; /* бейдж в hero */
+  --color-badge-foreground: #352b07;
+  --color-success: #31b939; /* иконки контактов, успех */
+  --color-row-alt: #f8fafb; /* чётные строки таблицы */
+  --color-table-head: #1c1c1c;
+  --color-dot: #ececec; /* неактивные точки пагинации */
+
+  /* --- шрифты --- */
+  --font-sans:
+    var(--font-onest), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+
+  /* --- скругления --- */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-hero: 25px;
+
+  /* --- типографика: clamp(мин@320px, интерполяция, макс@1920px) --- */
+  --text-h1: clamp(1.5rem, 0.988rem + 2.56vw, 4.0625rem); /* 24 -> 65 */
+  --text-h1--line-height: 1.3;
+  --text-h2: clamp(1.25rem, 0.75rem + 2.5vw, 3.75rem); /* 20 -> 60 */
+  --text-h2--line-height: 1.35;
+  --text-calendar-title: clamp(1.25rem, 0.8125rem + 2.1875vw, 3.4375rem); /* 20 -> 55 */
+  --text-calendar-title--line-height: 1.3;
+  --text-card-title: clamp(1rem, 0.6rem + 2vw, 3rem); /* 16 -> 48 */
+  --text-card-title--line-height: 1.25;
+  --text-promo-title: clamp(1rem, 0.7rem + 1.5vw, 2.5rem); /* 16 -> 40 */
+  --text-promo-title--line-height: 1.25;
+  --text-price: clamp(1.25rem, 1rem + 1.25vw, 2.5rem); /* 20 -> 40 */
+  --text-price--line-height: 1.2;
+  --text-hero-sub: clamp(0.75rem, 0.525rem + 1.125vw, 1.875rem); /* 12 -> 30 */
+  --text-hero-sub--line-height: 1.5;
+  --text-badge: clamp(0.9375rem, 0.75rem + 0.9375vw, 1.875rem); /* 15 -> 30 */
+  --text-badge--line-height: 1.3;
+  --text-popup-title: clamp(1.25rem, 1.0625rem + 0.9375vw, 2.1875rem); /* 20 -> 35 */
+  --text-popup-title--line-height: 1.3;
+  --text-body-lg: clamp(0.875rem, 0.825rem + 0.25vw, 1.125rem); /* 14 -> 18 */
+  --text-body-lg--line-height: 1.6;
+  --text-btn: clamp(0.75rem, 0.5375rem + 1.0625vw, 1.8125rem); /* 12 -> 29 */
+  --text-btn--line-height: 1.2;
+
+  /* --- анимации --- */
   --animate-fade-in: fade-in 0.3s ease-out;
   --animate-fade-up: fade-up 0.4s ease-out;
   --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-blick: blick 3s linear infinite;
+  --animate-caret: caret-blink 1s steps(1) infinite;
+  --animate-pulse-dot: pulse-dot 1.4s ease-in-out infinite;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.034 270);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.96 0.012 270);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.06 270);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.705 0.015 286.067);
-}
-
-.dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.02 270);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.28 0.018 270);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.552 0.05 270);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.552 0.016 285.938);
+  color-scheme: light;
+  --radius: 0.75rem; /* 12px */
+  --background: #f6f6f6;
+  --foreground: #1c1c1c;
+  --card: #ffffff;
+  --card-foreground: #1c1c1c;
+  --popover: #ffffff;
+  --popover-foreground: #1c1c1c;
+  --primary: #2f6c4a;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f8f9;
+  --secondary-foreground: #1c1c1c;
+  --muted: #f8fafb;
+  --muted-foreground: #8e8e8e;
+  --accent: #e8f1ec;
+  --accent-foreground: #13442e;
+  --destructive: #de2d26;
+  --border: #e4e7e6;
+  --input: #d6dbd9;
+  --ring: #2f6c4a;
+  --chart-1: #2f6c4a;
+  --chart-2: #31b939;
+  --chart-3: #fecb17;
+  --chart-4: #de2d26;
+  --chart-5: #13442e;
+  --sidebar: #f5f8f9;
+  --sidebar-foreground: #1c1c1c;
+  --sidebar-primary: #2f6c4a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8f1ec;
+  --sidebar-accent-foreground: #13442e;
+  --sidebar-border: #e4e7e6;
+  --sidebar-ring: #2f6c4a;
 }
 
 @keyframes fade-in {
@@ -142,19 +164,128 @@
   }
 }
 
+/* «Блик» основной кнопки: белая полоса под 45°, left от -80% до 160% */
+@keyframes blick {
+  from {
+    left: -80%;
+  }
+  to {
+    left: 160%;
+  }
+}
+
+/* Появление секции при прокрутке */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Пульсирующие точки на странице «Спасибо» */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
   }
+
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 6rem; /* под закреплённую шапку */
   }
+
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
+
+  /* Видимое фокус-кольцо (в старом сайте было outline: none — не повторять) */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+/* @utility объявляются на верхнем уровне (не внутри @layer) */
+
+/* Основной контейнер сайта: 86vw на мобильных, 81vw с md; не шире 1552px (при 1920) */
+@utility container-site {
+  width: 86vw;
+  max-width: 1552px;
+  margin-inline: auto;
+
+  @media (min-width: 768px) {
+    width: 81vw;
+  }
+}
+
+/* Широкий блок (календарь): 91vw, до 1747px, прижат вправо */
+@utility container-wide {
+  width: 91vw;
+  max-width: 1747px;
+  margin-left: auto;
+}
+
+/* Появление при прокрутке: CSS scroll-driven animation */
+@utility reveal {
+  @supports (animation-timeline: view()) {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+
+/* Fallback (IntersectionObserver добавляет .is-visible, см. components/site/reveal.tsx) */
+@utility reveal-fallback {
+  opacity: 0;
+  transform: translateY(6.25rem);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+
+  &.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Подчёркивание ссылки 1px, при hover сжимается до 60% */
+@utility link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 100% 1px;
+  transition: background-size 0.2s ease-out;
+
+  &:hover {
+    background-size: 60% 1px;
   }
 }
 
@@ -162,14 +293,27 @@
   .card-interactive {
     @apply transition-all duration-200 ease-out;
   }
+
   .card-interactive:hover {
     @apply shadow-md -translate-y-0.5;
   }
-  .auth-bg {
-    background-image: radial-gradient(
-      circle at 50% 0%,
-      var(--accent) 0%,
-      transparent 50%
-    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-blick,
+  .animate-caret,
+  .animate-pulse-dot,
+  .reveal {
+    animation: none;
+  }
+
+  .reveal-fallback {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

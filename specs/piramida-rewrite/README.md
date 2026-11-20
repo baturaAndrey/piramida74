@@ -115,12 +115,12 @@ graph TD
 - [x] [task-01-starter-cleanup-deps](./tasks/task-01-starter-cleanup-deps.md) — Чистка стартера, пакеты, shadcn, конфиги, тестовый тулинг
 
 ### Wave 2
-- [ ] [task-02-design-tokens-layout](./tasks/task-02-design-tokens-layout.md) — Токены Tailwind, Onest, DESIGN.md, root layout, фавиконы
-- [ ] [task-03-db-schema](./tasks/task-03-db-schema.md) — Полная схема Drizzle + одна миграция
-- [ ] [task-04-docker-deploy](./tasks/task-04-docker-deploy.md) — Dockerfile, entrypoint, бандл migrate
-- [ ] [task-05-calculator-core](./tasks/task-05-calculator-core.md) — Чистые функции калькулятора + Vitest
-- [ ] [task-06-shared-utils](./tasks/task-06-shared-utils.md) — Даты (Екатеринбург), slug, IP, JSON-LD
-- [ ] [task-07-notify-lib](./tasks/task-07-notify-lib.md) — Email (nodemailer) и Telegram
+- [x] [task-02-design-tokens-layout](./tasks/task-02-design-tokens-layout.md) — Токены Tailwind, Onest, DESIGN.md, root layout, фавиконы
+- [x] [task-03-db-schema](./tasks/task-03-db-schema.md) — Полная схема Drizzle + одна миграция
+- [x] [task-04-docker-deploy](./tasks/task-04-docker-deploy.md) — Dockerfile, entrypoint, бандл migrate
+- [x] [task-05-calculator-core](./tasks/task-05-calculator-core.md) — Чистые функции калькулятора + Vitest
+- [x] [task-06-shared-utils](./tasks/task-06-shared-utils.md) — Даты (Екатеринбург), slug, IP, JSON-LD
+- [x] [task-07-notify-lib](./tasks/task-07-notify-lib.md) — Email (nodemailer) и Telegram
 
 ### Wave 3
 - [ ] [task-08-auth-admin](./tasks/task-08-auth-admin.md) — Better Auth: админ, 2FA, rate limit, login, seed-admin, proxy

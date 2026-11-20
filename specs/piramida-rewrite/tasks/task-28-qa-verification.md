@@ -328,3 +328,12 @@ const res = await anon.post(captured[0].url, { headers: { 'next-action': capture
 - Цели Метрики (`lead_submit`, `calculator_submit`) в e2e не проверяются сетевыми запросами (Метрика не настроена в тестовой среде): достаточно проверки, что `window.ym` вызывается безопасно (нет исключений при пустом ID).
 - Отдельная оговорка из задачи 25: статусы HTTP для `notFound()`/`permanentRedirect()` внутри `<Suspense>` могут отличаться от «чистых» 404/308 — фиксировать фактическое поведение в отчёте, а не считать его ошибкой теста.
 - Не добавлять npm-пакеты (Lighthouse запускается через `npx` без установки в проект).
+
+## Отложенные замечания ревью (исправить в этой задаче)
+
+- `src/app/layout.tsx` — root `<Suspense fallback={null}>` вокруг `children`: после задач 13/14 убедиться, что все страницы имеют свои Suspense-границы, и по возможности убрать глобальную обёртку. Если нельзя — задокументировать в DESIGN.md.
+- `src/lib/db.ts` — фиктивный URL при сборке: добавить явную ошибку, если запрос выполняется на этапе build.
+- `src/lib/schema/menu.ts` — `menuItems.priceGroupId` `set null`: удаление сетки цен в админке (задача 18) должно проверять использование. Проверить.
+- `src/lib/calculator/calculate.ts` — нецелые qty: убедиться, что zod в `submitLead` и UI калькулятора разрешает только целые.
+- `src/lib/calculator/url-state.ts` — `serializeCalculator` округлять длительность до 0.5 ч.
+- `src/lib/notify/lead-templates.ts` — добавить тест: `leadTelegram(..., { includePii: false })` не содержит имя и телефон; type-level проверка совпадения `LeadNotifyType` с enum схемы.
