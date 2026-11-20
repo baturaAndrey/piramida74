@@ -165,7 +165,7 @@ export function MenuCatalog({ categories, modifiers }: MenuCatalogProps) {
             entries={navEntries}
             activeSlug={navActive}
             variant="chips"
-            className="bg-background/90 sticky top-[72px] z-30 -mx-[7vw] mt-4 border-b px-[7vw] backdrop-blur md:-mx-[9.5vw] md:px-[9.5vw] lg:hidden"
+            className="bg-background/90 bleed-gutter sticky top-[72px] z-30 mt-4 border-b backdrop-blur lg:hidden"
           />
         ) : null}
 

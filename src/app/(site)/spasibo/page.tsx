@@ -13,7 +13,7 @@ const DOT_DELAYS = ["0s", ".3s", ".6s"] as const;
 // с `await connection()` + getGallery("hero") (задача 12) и <Picture priority> (задача 09).
 export default function ThankYouPage() {
   return (
-    <div className="px-[1vw] py-4">
+    <div className="container-frame py-4">
       <section className="from-primary-dark to-primary rounded-hero relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-gradient-to-br px-6 py-16 text-center">
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-8">
           <h1 className="text-h1 font-semibold text-white">

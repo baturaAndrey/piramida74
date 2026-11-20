@@ -93,7 +93,7 @@
   --animate-fade-in: fade-in 0.3s ease-out;
   --animate-fade-up: fade-up 0.4s ease-out;
   --animate-scale-in: scale-in 0.2s ease-out;
-  --animate-blick: blick 3s linear infinite;
+  --animate-blick: blick 3.9s ease-out infinite;
   --animate-caret: caret-blink 1s steps(1) infinite;
   --animate-pulse-dot: pulse-dot 1.4s ease-in-out infinite;
 }
@@ -132,6 +132,23 @@
   --sidebar-accent-foreground: #13442e;
   --sidebar-border: #e4e7e6;
   --sidebar-ring: #2f6c4a;
+
+  /* Сетка: боковое поле 70 / 40 / 24 / 16 px (≥1366 / 1101–1365 / 600–1100 / ≤599) */
+  --gutter: 70px;
+  /* Отступ скруглённых фото-блоков от краёв рамки 1920 (1vw старого сайта, 8…19px) */
+  --frame-inset: clamp(8px, 1vw, 19px);
+
+  @media (max-width: 1365px) {
+    --gutter: 40px;
+  }
+
+  @media (max-width: 1100px) {
+    --gutter: 24px;
+  }
+
+  @media (max-width: 599px) {
+    --gutter: 16px;
+  }
 }
 
 @keyframes fade-in {
@@ -165,13 +182,18 @@
   }
 }
 
-/* «Блик» основной кнопки: белая полоса под 45°, left от -80% до 160% */
+/*
+ * «Блик» основной кнопки: мягкая полоса под 45° проходит слева направо примерно за треть цикла,
+ * затем пауза до следующего прохода (тайминг — как в billiard-darom).
+ */
 @keyframes blick {
-  from {
-    left: -80%;
+  0%,
+  12% {
+    left: -100px;
   }
-  to {
-    left: 160%;
+  45%,
+  100% {
+    left: calc(100% + 60px);
   }
 }
 
@@ -230,28 +252,49 @@
 
   /* Видимое фокус-кольцо (в старом сайте было outline: none — не повторять) */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-ring;
+    @apply outline-ring outline-2 outline-offset-2;
   }
 }
 
 /* @utility объявляются на верхнем уровне (не внутри @layer) */
 
-/* Основной контейнер сайта: 86vw на мобильных, 81vw с md; не шире 1552px (при 1920) */
-@utility container-site {
-  width: 86vw;
-  max-width: 1552px;
-  margin-inline: auto;
+/*
+ * Сетка сайта: рамка 1920px по центру + боковое поле --gutter (значения — в :root ниже).
+ * Ширина считается от родителя (100%), а не от vw — полоса прокрутки не даёт горизонтального скролла.
+ */
 
-  @media (min-width: 768px) {
-    width: 81vw;
-  }
+/* Контент: рамка 1920px с полями --gutter */
+@utility container-site {
+  width: 100%;
+  max-width: 1920px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
 }
 
-/* Широкий блок (календарь): 91vw, до 1747px, прижат вправо */
-@utility container-wide {
-  width: 91vw;
-  max-width: 1747px;
-  margin-left: auto;
+/* Только боковое поле, без ограничения ширины */
+@utility px-gutter {
+  padding-inline: var(--gutter);
+}
+
+/*
+ * Скруглённый фото-блок (hero, «О клубе», форма): внутри рамки 1920px с небольшим отступом
+ * --frame-inset от её краёв. Содержимое внутри выравнивается по общему полю через px-gutter-framed.
+ */
+@utility container-frame {
+  width: calc(100% - 2 * var(--frame-inset));
+  max-width: calc(1920px - 2 * var(--frame-inset));
+  margin-inline: auto;
+}
+
+/* Поле внутри container-frame: вместе с --frame-inset даёт ровно --gutter от края рамки */
+@utility px-gutter-framed {
+  padding-inline: calc(var(--gutter) - var(--frame-inset));
+}
+
+/* Горизонтальная лента «в край» внутри container-site: выходит на поле и компенсирует его */
+@utility bleed-gutter {
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
 }
 
 /* Появление при прокрутке: CSS scroll-driven animation */
@@ -296,7 +339,7 @@
   }
 
   .card-interactive:hover {
-    @apply shadow-md -translate-y-0.5;
+    @apply -translate-y-0.5 shadow-md;
   }
 }
 
@@ -327,7 +370,9 @@
 
 /*
  * «Блик» основной кнопки (.md-main-color-btn::after старого сайта, components/site/primary-button.tsx):
- * белая полоса rgba(255,255,255,.7) под 45°, бежит слева направо за 3 s.
+ * узкая (64px) полоса под 45° с прозрачными краями (градиент 0 → .55 → 0) и размытием 9px —
+ * мягкий отсвет, а не сплошная светлая плашка. Полоса втрое выше кнопки: её концы всегда
+ * за пределами кнопки (overflow: hidden), и наклон не обрезается углом.
  * Сама анимация — утилита `after:animate-blick` (keyframes `blick` выше).
  * Анимируется `left` (перерисовка внутри кнопки), а не transform: на композиторе каждая кнопка
  * получала бы свой анимируемый слой, и в headless Chrome без GPU (Lighthouse/PSI) это давало
@@ -343,11 +388,17 @@
 .primary-shine::after {
   content: "";
   position: absolute;
-  top: -20%;
-  left: -80%;
-  width: 40px;
-  height: 140%;
-  background: rgba(255, 255, 255, 0.7);
+  top: -120%;
+  left: -100px;
+  width: 64px;
+  height: 340%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  filter: blur(9px);
   transform: rotate(45deg);
   transition: opacity 0.3s;
   pointer-events: none;

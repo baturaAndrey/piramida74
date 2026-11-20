@@ -73,12 +73,11 @@ export function formatRub(amount: number): string {
   return `${sign}${digits} ₽`;
 }
 
-/** Классы для `<Badge variant="outline">`: new синий, in_progress жёлтый, done зелёный, spam серый */
+/** Классы для `<Badge variant="outline">`: new — primary, in_progress — жёлтый (badge), done — success, spam — серый */
 export const LEAD_STATUS_BADGE_CLASSES: Record<LeadStatus, string> = {
-  new: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300",
-  in_progress:
-    "border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300",
-  done: "border-green-200 bg-green-50 text-green-600 dark:border-green-900 dark:bg-green-950 dark:text-green-400",
+  new: "border-primary bg-primary text-primary-foreground",
+  in_progress: "border-badge bg-badge/20 text-badge-foreground",
+  done: "border-success/40 bg-success/10 text-success",
   spam: "border-border bg-muted text-muted-foreground",
 };
 

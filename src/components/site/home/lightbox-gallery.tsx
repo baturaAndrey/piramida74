@@ -1,6 +1,8 @@
 "use client";
 
 import { lazy, Suspense, useState } from "react";
+import { toast } from "sonner";
+import { LazyBoundary } from "@/components/lazy-boundary";
 import { Picture } from "@/components/media/picture";
 import { mediaUrl } from "@/lib/media/url";
 import type { PublicMedia } from "@/lib/queries/types";
@@ -16,6 +18,9 @@ function prefetchLightbox() {
   // Ошибку сети здесь глушим: при открытии `React.lazy` запросит модуль ещё раз
   loadLightboxViewer().catch(() => {});
 }
+
+/** Один тост на все галереи страницы: повторные клики обновляют его, а не множат */
+const VIEWER_ERROR_TOAST_ID = "lightbox-chunk-error";
 
 export type LightboxGalleryItem = { asset: PublicMedia; alt: string };
 
@@ -50,7 +55,7 @@ const LAYOUT: Record<
   bar: {
     thumbs: 5,
     main: "mb-2 h-[clamp(221px,31.25vw,600px)] lg:mb-4",
-    mainSizes: "(min-width:768px) 81vw, 86vw",
+    mainSizes: "(min-width:1920px) 1780px, 100vw",
     grid: "grid-cols-5 gap-2 lg:gap-4",
     thumb: "h-[clamp(53px,7.8vw,150px)]",
     thumbSizes: "(min-width:768px) 16vw, 18vw",
@@ -96,6 +101,16 @@ export function LightboxGallery({ items, variant, className }: LightboxGalleryPr
     setViewerMounted(true);
     setIndex(i);
   };
+  // Чанк лайтбокса не загрузился: фото остаются в сетке, просмотр закрывается без error.tsx.
+  // Тост — только при попытке открыть (после закрытия граница ловит ту же ошибку повторно)
+  const handleViewerError = () => {
+    if (index >= 0) {
+      toast.error("Не удалось открыть просмотр фото. Проверьте соединение и попробуйте ещё раз.", {
+        id: VIEWER_ERROR_TOAST_ID,
+      });
+    }
+    setIndex(-1);
+  };
 
   return (
     <div className={className}>
@@ -139,14 +154,16 @@ export function LightboxGallery({ items, variant, className }: LightboxGalleryPr
         </div>
       ) : null}
       {viewerMounted ? (
-        <Suspense fallback={null}>
-          <LightboxViewer
-            open={index >= 0}
-            index={Math.max(index, 0)}
-            slides={slides}
-            onClose={() => setIndex(-1)}
-          />
-        </Suspense>
+        <LazyBoundary resetKey={index >= 0} onError={handleViewerError}>
+          <Suspense fallback={null}>
+            <LightboxViewer
+              open={index >= 0}
+              index={Math.max(index, 0)}
+              slides={slides}
+              onClose={() => setIndex(-1)}
+            />
+          </Suspense>
+        </LazyBoundary>
       ) : null}
     </div>
   );

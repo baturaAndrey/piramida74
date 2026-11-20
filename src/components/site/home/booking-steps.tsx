@@ -87,7 +87,7 @@ export async function BookingSteps() {
           <MoveHorizontal className="size-4" aria-hidden="true" />
           Листайте влево/вправо
         </p>
-        <ol className="-mx-[7vw] flex snap-x snap-mandatory [scrollbar-width:none] gap-4 overflow-x-auto px-[7vw] md:-mx-[9.5vw] md:px-[9.5vw] lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-[clamp(16px,1.6vw,30px)] lg:overflow-visible lg:px-0">
+        <ol className="bleed-gutter flex snap-x snap-mandatory [scrollbar-width:none] gap-4 overflow-x-auto lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-[clamp(16px,1.6vw,30px)] lg:overflow-visible lg:px-0">
           <li className={cn(CARD_CLASS, "text-foreground bg-white")}>
             <StepBadge step={1} />
             <h3 className={CARD_TITLE_CLASS}>Бронирование столов:</h3>

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { legacyRedirects } from "./src/lib/seo/legacy-redirects";
 import type { NextConfig } from "next";
 
@@ -37,6 +39,34 @@ const securityHeaders = [
     : []),
 ];
 
+/**
+ * Глобы нативных пакетов @img/* ровно для той версии sharp, которую резолвит приложение.
+ * Общий `@img+sharp-*` захватывал и устаревшие версии, оставшиеся в node_modules/.pnpm
+ * (например, 0.34.5 рядом с 0.35.5), и тащил в standalone вторую копию libvips.
+ * Версии берутся из установленного sharp: своя — у платформенных `@img/sharp-<platform>`,
+ * libvips (`@img/sharp-libvips-<platform>`) версионируется отдельно — из его optionalDependencies.
+ * pnpm ставит только пакеты текущей платформы: win32-x64 локально, linuxmusl-x64 в Docker (alpine).
+ */
+function sharpNativeTracingGlobs(): string[] {
+  // require.resolve("sharp/package.json") недоступен: subpath не объявлен в exports sharp
+  const manifestPath = path.join(process.cwd(), "node_modules", "sharp", "package.json");
+  const sharp = JSON.parse(readFileSync(manifestPath, "utf8")) as {
+    version: string;
+    optionalDependencies?: Record<string, string>;
+  };
+  const libvipsVersions = new Set(
+    Object.entries(sharp.optionalDependencies ?? {})
+      .filter(([name]) => name.startsWith("@img/sharp-libvips-"))
+      .map(([, version]) => version)
+  );
+  return [
+    `node_modules/.pnpm/@img+sharp-*@${sharp.version}/node_modules/@img/**/*`,
+    ...[...libvipsVersions].map(
+      (version) => `node_modules/.pnpm/@img+sharp-libvips-*@${version}/node_modules/@img/**/*`
+    ),
+  ];
+}
+
 const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
 
 const nextConfig: NextConfig = {
@@ -51,11 +81,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     // @img/sharp-<platform>: на Windows трассировка не забирает libvips-*.dll рядом с .node
     // (sharp не грузится в standalone → 500 на /media); на Linux пакеты libvips кладутся явно
-    "/*": [
-      "node_modules/sharp/**/*",
-      "node_modules/.pnpm/@img+sharp-*/node_modules/@img/**/*",
-      "src/assets/fonts/**/*",
-    ],
+    "/*": ["node_modules/sharp/**/*", ...sharpNativeTracingGlobs(), "src/assets/fonts/**/*"],
   },
   experimental: {
     // Файлы идут через route handler /api/admin/media (свой лимит 10 МБ), не через Server Actions.

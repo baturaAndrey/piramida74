@@ -640,7 +640,7 @@ function ArticleFormInner({
               <p className="text-primary truncate text-base font-medium">
                 {seoTitle?.trim() || title || "Заголовок статьи"}
               </p>
-              <p className="truncate font-mono text-xs text-green-700 dark:text-green-400">
+              <p className="text-success truncate font-mono text-xs">
                 /blog/{slug || "adres-stati"}
               </p>
               <p className="text-muted-foreground line-clamp-2 text-sm">

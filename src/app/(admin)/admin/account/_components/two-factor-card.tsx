@@ -358,7 +358,7 @@ function BackupCodes({
     <div className="space-y-4">
       <div
         role="alert"
-        className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200"
+        className="border-badge bg-badge/15 text-badge-foreground flex items-start gap-2 rounded-lg border p-4 text-sm"
       >
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
         <p>
@@ -452,7 +452,7 @@ export function TwoFactorCard({ enabled, email }: TwoFactorCardProps) {
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle className="text-xl">Двухфакторная аутентификация</CardTitle>
           {enabled ? (
-            <Badge variant="outline" className="text-green-600 dark:text-green-400">
+            <Badge variant="outline" className="text-success">
               Включена
             </Badge>
           ) : (
@@ -478,7 +478,7 @@ export function TwoFactorCard({ enabled, email }: TwoFactorCardProps) {
             onDone={() => setView({ kind: "status" })}
           />
         ) : enabled ? (
-          <p className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
+          <p className="text-success flex items-center gap-2 text-sm font-medium">
             <ShieldCheck className="h-4 w-4" aria-hidden />
             2FA включена
           </p>

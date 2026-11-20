@@ -8,8 +8,8 @@ type ContainerProps<T extends React.ElementType> = {
 } & Omit<React.ComponentPropsWithoutRef<T>, "as" | "className" | "children">;
 
 /**
- * Основной контейнер сайта (`.wrapper` старого сайта): 86vw на мобильных, 81vw с `md`,
- * не шире 1552px. Значения — утилита `container-site` из `globals.css`.
+ * Основной контейнер сайта: рамка до 1920px по центру с боковым полем `--gutter`
+ * (70 / 40 / 24 / 16px на ≥1366 / 1101–1365 / 600–1100 / ≤599). Утилита `container-site` из `globals.css`.
  */
 export function Container<T extends React.ElementType = "div">({
   as,

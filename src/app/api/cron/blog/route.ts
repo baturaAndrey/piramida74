@@ -16,7 +16,8 @@ function unauthorized() {
 export async function POST(request: Request) {
   if (!isValidCronRequest(request)) return unauthorized();
 
-  revalidateTag(TAGS.blog, "max");
+  // Вызов извне Server Action (cron) — updateTag недоступен; { expire: 0 } сбрасывает кэш без stale-ответов
+  revalidateTag(TAGS.blog, { expire: 0 });
   // Proxy держит «404» для /blog/<slug> до 60 с — наступившая отложенная статья должна открываться сразу
   bumpBlogRouteCache();
   return Response.json({ ok: true, revalidated: TAGS.blog });

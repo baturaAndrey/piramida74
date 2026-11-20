@@ -178,8 +178,8 @@ function ChannelStatus({
         className={cn(
           "mt-0.5 shrink-0",
           (!status || skipped) && "text-muted-foreground",
-          status?.ok && "text-green-600 dark:text-green-400",
-          status && !status.ok && !skipped && "text-red-600 dark:text-red-400"
+          status?.ok && "text-success",
+          status && !status.ok && !skipped && "text-destructive"
         )}
       >
         {icon}
@@ -190,11 +190,11 @@ function ChannelStatus({
           {!status ? (
             <span className="text-muted-foreground font-normal">не отправлялось</span>
           ) : status.ok ? (
-            <span className="text-green-600 dark:text-green-400">отправлено</span>
+            <span className="text-success">отправлено</span>
           ) : skipped ? (
             <span className="text-muted-foreground font-normal">пропущено (не настроено)</span>
           ) : (
-            <span className="text-red-600 dark:text-red-400">ошибка</span>
+            <span className="text-destructive">ошибка</span>
           )}
         </p>
         {status && !status.ok && !skipped && status.error ? (

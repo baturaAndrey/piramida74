@@ -15,8 +15,8 @@ import type { LeadRow, NotifyState } from "../_queries";
 import type { ColumnDef } from "@tanstack/react-table";
 
 const NOTIFY_CLASSES: Record<NotifyState, string> = {
-  ok: "text-green-600 dark:text-green-400",
-  error: "text-red-600 dark:text-red-400",
+  ok: "text-success",
+  error: "text-destructive",
   skipped: "text-muted-foreground",
   none: "text-muted-foreground/50",
 };

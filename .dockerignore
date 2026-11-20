@@ -13,6 +13,8 @@ playwright-report
 test-results
 blob-report
 e2e
+# конфиг Playwright импортирует e2e/helpers — без e2e/ он не прошёл бы проверку типов next build
+playwright.config.ts
 res
 specs
 docs

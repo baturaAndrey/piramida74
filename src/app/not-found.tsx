@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { LeadDialogTrigger } from "@/components/leads/lead-dialog";
 import { Picture } from "@/components/media/picture";
-import { Container } from "@/components/site/container";
 import { SiteFooter } from "@/components/site/footer";
 import { SiteHeader } from "@/components/site/header";
 import { PrimaryButton } from "@/components/site/primary-button";
@@ -46,7 +45,7 @@ export default function NotFound() {
     <div className="bg-background text-foreground flex min-h-screen flex-col">
       <SiteHeader />
       <main id="main-content" className="flex-1 pb-[clamp(32px,2.604vw,50px)]">
-        <section className="rounded-hero from-primary-dark to-primary relative isolate mx-[1vw] flex min-h-[clamp(420px,39.53vw,759px)] overflow-hidden bg-gradient-to-br">
+        <section className="rounded-hero from-primary-dark to-primary container-frame relative isolate flex min-h-[clamp(420px,39.53vw,759px)] overflow-hidden bg-gradient-to-br">
           <div className="absolute inset-0 -z-10" aria-hidden="true">
             <Suspense fallback={null}>
               <HeroBackground />
@@ -54,7 +53,7 @@ export default function NotFound() {
             {/* Затемнение слева — белый текст читается на любом фото */}
             <div className="from-primary-dark/80 absolute inset-0 bg-gradient-to-r via-black/20 to-transparent" />
           </div>
-          <Container className="flex flex-col items-start justify-center py-[clamp(40px,7.29vw,140px)] text-white">
+          <div className="px-gutter-framed flex w-full flex-col items-start justify-center py-[clamp(40px,7.29vw,140px)] text-white">
             <p className="bg-badge text-badge-foreground text-badge-size mb-4 rounded-lg p-[clamp(10px,0.83vw,16px)] font-medium">
               Русский бильярд
             </p>
@@ -71,7 +70,7 @@ export default function NotFound() {
                 <PrimaryButton variant="outline-light">Забронировать стол</PrimaryButton>
               </LeadDialogTrigger>
             </div>
-          </Container>
+          </div>
         </section>
       </main>
       <SiteFooter />

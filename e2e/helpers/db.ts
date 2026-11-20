@@ -7,10 +7,25 @@ import postgres from "postgres";
  */
 let client: ReturnType<typeof postgres> | undefined;
 
+/** Имя БД из URL; `null`, если URL не задан или не разбирается */
+function databaseName(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    return decodeURIComponent(new URL(url).pathname.slice(1));
+  } catch {
+    return null;
+  }
+}
+
 export function sql() {
   const url = process.env.POSTGRES_URL;
-  if (!url || !url.includes("e2e")) {
-    throw new Error(`POSTGRES_URL должен указывать на тестовую БД (*e2e*), сейчас: ${url ?? "не задан"}`);
+  const dbName = databaseName(url);
+  // Та же проверка, что в scripts/e2e-db.mjs: «e2e» в хосте/пароле не делает БД тестовой
+  if (!url || !dbName || !/^[a-z0-9_]+$/.test(dbName) || !dbName.includes("e2e")) {
+    // Сам URL не выводим — в нём пароль
+    throw new Error(
+      `POSTGRES_URL должен указывать на тестовую БД (имя [a-z0-9_]+ с «e2e»), сейчас: ${dbName ?? "не задан или некорректен"}`
+    );
   }
   client ??= postgres(url, { max: 1, onnotice: () => {} });
   return client;

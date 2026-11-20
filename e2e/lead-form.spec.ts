@@ -243,6 +243,30 @@ test.describe("Заявки", () => {
     await expect.poll(async () => (await leadsByPhone(phone)).length).toBe(before + 1);
   });
 
+  test("ленивый попап с клавиатуры: фокус → Enter открывает, Escape закрывает и возвращает фокус", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const trigger = page.getByRole("banner").getByRole("button", { name: "Заказать звонок" });
+    // Ждём только гидратацию кнопки (React вешает свои свойства на DOM-узел), а не открытие попапа:
+    // само открытие проверяется обычным expect, без повторов toPass
+    await expect
+      .poll(() =>
+        trigger.evaluate((el) => Object.keys(el).some((key) => key.startsWith("__reactProps")))
+      )
+      .toBe(true);
+
+    await trigger.focus(); // onFocus предзагружает чанк попапа
+    await page.keyboard.press("Enter");
+    const dialog = page.getByRole("dialog", { name: "Перезвоните мне" });
+    await expect(dialog).toBeVisible(); // пока попап открыт, Radix скрывает шапку (aria-hidden) от getByRole
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
   test("rate limit: 6-я заявка с одного IP за 10 минут отклоняется понятной ошибкой", async ({
     page,
   }) => {

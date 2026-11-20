@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { parseEnv } from "node:util";
 import { defineConfig, devices } from "@playwright/test";
+import { ADMIN_STORAGE_STATE } from "./e2e/helpers/auth-state";
 
 /**
  * E2E на production-сборке (то, что реально поедет в Docker: cacheComponents, updateTag,
@@ -12,11 +13,12 @@ const E2E_ENV_FILE = ".env.e2e";
 const e2eEnv: Record<string, string> = existsSync(E2E_ENV_FILE)
   ? (parseEnv(readFileSync(E2E_ENV_FILE, "utf8")) as Record<string, string>)
   : {};
-for (const [key, value] of Object.entries(e2eEnv)) process.env[key] ??= value;
+// .env.e2e важнее окружения оболочки (как в scripts/e2e-db.mjs): случайный POSTGRES_URL из shell
+// не должен направить SQL-хелперы тестов на рабочую БД
+Object.assign(process.env, e2eEnv);
 
 const PORT = 3100;
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
-export const ADMIN_STORAGE_STATE = "e2e/.auth/admin.json";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -57,6 +59,10 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["chromium"],
     },
-    { name: "visual", testMatch: /visual-compare\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "visual",
+      testMatch: /visual-compare\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
 });

@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 import { MoveHorizontal } from "lucide-react";
 import { Picture } from "@/components/media/picture";
-import { Container } from "@/components/site/container";
 import { Reveal } from "@/components/site/reveal";
 import { SectionTitle } from "@/components/site/section-title";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,14 +56,14 @@ export async function AboutSection() {
     <section
       id="clientsc"
       className={cn(
-        "bg-footer relative mx-2 scroll-mt-24 overflow-hidden rounded-[12px] md:mx-[1vw]",
+        "bg-footer container-frame relative scroll-mt-24 overflow-hidden rounded-[12px]",
         SECTION_HEIGHT
       )}
     >
       {background ? (
         <Picture
           asset={background}
-          sizes="100vw"
+          sizes="(min-width:1920px) 1882px, 100vw"
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-bottom"
         />
@@ -76,7 +75,7 @@ export async function AboutSection() {
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 via-black/20 to-transparent md:h-[45%]" />
       </div>
 
-      <Container>
+      <div className="px-gutter-framed">
         <Reveal>
           <SectionTitle
             as="h2"
@@ -85,11 +84,11 @@ export async function AboutSection() {
             {title}
           </SectionTitle>
         </Reveal>
-      </Container>
+      </div>
 
       {/* Десктоп: 4 колонки внизу, текст «выезжает» при hover/focus */}
       <div className="absolute inset-x-0 bottom-0 z-10 hidden text-white md:block">
-        <ul className="mx-auto flex w-[81vw] max-w-[1552px]">
+        <ul className="px-gutter-framed flex">
           {points.map((point, index) => (
             <li
               key={`${point.title}-${index}`}
@@ -114,12 +113,12 @@ export async function AboutSection() {
 
       {/* Мобильный: горизонтальная scroll-snap лента, текст виден всегда */}
       <div className="absolute inset-x-0 bottom-0 z-10 pb-6 text-white md:hidden">
-        <Container>
+        <div className="px-gutter-framed">
           <p className="mb-3 flex items-center gap-2 text-xs">
             <MoveHorizontal className="size-4" aria-hidden="true" />
             Листайте влево/вправо
           </p>
-          <ul className="-mx-[7vw] flex snap-x snap-mandatory [scrollbar-width:none] gap-4 overflow-x-auto px-[7vw]">
+          <ul className="bleed-gutter flex snap-x snap-mandatory [scrollbar-width:none] gap-4 overflow-x-auto">
             {points.map((point, index) => (
               <li key={`${point.title}-${index}`} className="w-[78%] shrink-0 snap-center">
                 <PointNumber index={index} />
@@ -128,7 +127,7 @@ export async function AboutSection() {
               </li>
             ))}
           </ul>
-        </Container>
+        </div>
       </div>
     </section>
   );
@@ -136,7 +135,7 @@ export async function AboutSection() {
 
 export function AboutSectionSkeleton() {
   return (
-    <div className="mx-2 md:mx-[1vw]">
+    <div className="container-frame">
       <Skeleton className={cn("w-full rounded-[12px]", SECTION_HEIGHT)} />
     </div>
   );

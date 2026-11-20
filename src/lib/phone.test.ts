@@ -61,6 +61,12 @@ describe("applyPhoneInput", () => {
     expect(applyPhoneInput("+7(", "+7(9001112233")).toBe("+7(900)111-22-33");
   });
 
+  it("keeps typed digits when a paste after them yields 11 digits starting with 7/8", () => {
+    // 9 цифр уже набрано, вставка ещё двух — префикс маски не отбрасывается, номер не сдвигается
+    expect(applyPhoneInput("+7(800)123-45-6", "+7(800)123-45-678")).toBe("+7(800)123-45-67");
+    expect(applyPhoneInput("+7(712)345-67-8", "+7(712)345-67-890")).toBe("+7(712)345-67-89");
+  });
+
   it("does not shift a complete number when an extra digit is typed", () => {
     expect(applyPhoneInput("+7(800)123-45-67", "+7(800)123-45-678")).toBe("+7(800)123-45-67");
   });

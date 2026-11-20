@@ -199,8 +199,7 @@ test.describe("Блог", () => {
   test("отложенная публикация: в будущем не видна, после переноса даты и cron — видна", async ({
     page,
   }) => {
-    // Без пересборки с правкой cron (bumpBlogRouteCache) proxy может держать 404 до 60 с
-    test.setTimeout(150_000);
+    test.setTimeout(90_000);
     const errors = trackConsoleErrors(page, [NOT_FOUND_RESOURCE]);
     const suffix = uniq();
     const title = `E2E Отложенная ${suffix}`;
@@ -219,9 +218,10 @@ test.describe("Блог", () => {
     // Другие тесты публикуют статьи «сейчас» — поэтому ниже ищем карточку на нескольких страницах /blog
     await sql()`update articles set published_at = now() - interval '10 minutes' where id = ${id}`;
     await postCron(page);
-
+    // cron сбрасывает и тег блога, и кэш «404» в proxy (bumpBlogRouteCache) — статья доступна почти сразу;
+    // таймаут намеренно меньше прежнего 60-секундного TTL proxy, чтобы поймать регрессию
     await expect
-      .poll(() => statusOf(page, `/blog/${slug}`), { timeout: 75_000, intervals: [1_000, 5_000] })
+      .poll(() => statusOf(page, `/blog/${slug}`), { timeout: 15_000, intervals: [500, 1_000] })
       .toBe(200);
     await expect
       .poll(

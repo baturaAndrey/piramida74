@@ -26,6 +26,12 @@ type PromotionsCarouselClientProps = {
 
 const ARROW_CLASS =
   "bg-primary hover:bg-primary-dark absolute top-1/2 z-10 hidden size-16 -translate-y-1/2 items-center justify-center rounded-full text-white transition-colors xl:flex";
+/**
+ * Стрелки (64px) — в боковом поле сетки, по его центру. Если поле уже стрелки (40px на 1280–1365),
+ * стрелка прижимается к краю экрана и немного заходит на карусель, но не выходит за viewport.
+ */
+const ARROW_OFFSET_LEFT = "-left-[min(calc(var(--gutter)/2+32px),var(--gutter))]";
+const ARROW_OFFSET_RIGHT = "-right-[min(calc(var(--gutter)/2+32px),var(--gutter))]";
 
 /** Подписка на события embla для `useSyncExternalStore` (без setState в эффектах). */
 function useEmblaSnapshot<T>(
@@ -91,7 +97,7 @@ export function PromotionsCarouselClient({ items }: PromotionsCarouselClientProp
               type="button"
               aria-label="Предыдущая акция"
               onClick={() => api?.scrollPrev()}
-              className={cn(ARROW_CLASS, "-left-[100px]")}
+              className={cn(ARROW_CLASS, ARROW_OFFSET_LEFT)}
             >
               <ChevronLeft aria-hidden="true" className="size-5" />
             </button>
@@ -99,7 +105,7 @@ export function PromotionsCarouselClient({ items }: PromotionsCarouselClientProp
               type="button"
               aria-label="Следующая акция"
               onClick={() => api?.scrollNext()}
-              className={cn(ARROW_CLASS, "-right-[100px]")}
+              className={cn(ARROW_CLASS, ARROW_OFFSET_RIGHT)}
             >
               <ChevronRight aria-hidden="true" className="size-5" />
             </button>

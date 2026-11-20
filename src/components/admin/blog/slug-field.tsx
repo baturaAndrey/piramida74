@@ -175,10 +175,7 @@ export function SlugField({
           </span>
         ) : null}
         {shown.kind === "free" ? (
-          <span
-            className="inline-flex items-center gap-1 text-green-600 dark:text-green-400"
-            role="status"
-          >
+          <span className="text-success inline-flex items-center gap-1" role="status">
             <Check className="h-3 w-3" aria-hidden />
             Свободен
           </span>

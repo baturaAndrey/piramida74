@@ -105,7 +105,7 @@ export function LegalVersions({ type, versions }: LegalVersionsProps) {
                     <div className="flex flex-wrap items-center gap-1">
                       <Badge variant={STATUS_VARIANTS[v.status]}>{STATUS_LABELS[v.status]}</Badge>
                       {v.status === "current" ? (
-                        <Badge variant="outline" className="text-green-600 dark:text-green-400">
+                        <Badge variant="outline" className="text-success">
                           Текущая версия
                         </Badge>
                       ) : null}

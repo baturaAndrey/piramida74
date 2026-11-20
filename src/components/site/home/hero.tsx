@@ -4,13 +4,12 @@ import { Picture } from "@/components/media/picture";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getGallery } from "@/lib/queries/galleries";
 import { getSettings } from "@/lib/queries/settings";
-import { Container } from "../container";
 import { PrimaryButton } from "../primary-button";
 import { HeroBadge } from "./hero-badge";
 
-/** Рамка секции: поля по бокам, скругление и высота — общие для секции и скелетона */
+/** Рамка секции: внутри рамки 1920 с отступом --frame-inset; скругление и высота — общие для секции и скелетона */
 const HERO_FRAME =
-  "relative mx-2 mb-6 min-h-[clamp(520px,40vw,770px)] overflow-hidden rounded-[12px] md:mx-[1vw] md:mb-[2.6vw] md:rounded-[25px]";
+  "container-frame relative mb-6 min-h-[clamp(520px,40vw,770px)] overflow-hidden rounded-[12px] md:mb-[min(2.6vw,50px)] md:rounded-[25px]";
 
 /** Первый экран: фон из галереи `hero`, печатающийся бейдж, H1, подзаголовок и кнопка брони. */
 export async function Hero() {
@@ -28,7 +27,7 @@ export async function Hero() {
         <>
           <Picture
             asset={background}
-            sizes="100vw"
+            sizes="(min-width:1920px) 1882px, 100vw"
             alt={background.alt || settings.heroTitle}
             priority
             pictureClassName="absolute inset-0 z-0"
@@ -39,7 +38,7 @@ export async function Hero() {
         </>
       ) : null}
 
-      <Container className="relative z-10 pt-[clamp(32px,3.6vw,69px)] text-center md:text-left">
+      <div className="px-gutter-framed relative z-10 pt-[clamp(32px,3.6vw,69px)] text-center md:text-left">
         <HeroBadge phrases={settings.heroBadgePhrases} className="mb-4" />
         <h1 className="mb-[clamp(16px,2.34vw,45px)] max-w-[992px] text-[clamp(24px,3.385vw,65px)] leading-[1.31] font-semibold text-white">
           {settings.heroTitle}
@@ -57,7 +56,7 @@ export async function Hero() {
             Забронировать стол
           </PrimaryButton>
         </LeadDialogTrigger>
-      </Container>
+      </div>
     </section>
   );
 }

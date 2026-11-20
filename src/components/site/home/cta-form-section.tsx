@@ -2,7 +2,6 @@ import Image from "next/image";
 import { connection } from "next/server";
 import { LeadForm } from "@/components/leads/lead-form";
 import { Picture } from "@/components/media/picture";
-import { Container } from "@/components/site/container";
 import { Reveal } from "@/components/site/reveal";
 import { SectionTitle } from "@/components/site/section-title";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,7 +48,7 @@ export async function CtaFormSection() {
   return (
     <section
       id="getconsultation"
-      className="bg-primary-dark relative mx-2 mb-[clamp(24px,2.7vw,52px)] scroll-mt-24 overflow-hidden rounded-[12px] text-white md:mx-[1vw]"
+      className="bg-primary-dark container-frame relative mb-[clamp(24px,2.7vw,52px)] scroll-mt-24 overflow-hidden rounded-[12px] text-white"
     >
       {background ? (
         <Picture
@@ -77,7 +76,7 @@ export async function CtaFormSection() {
         <PersonImage media={person} />
       </div>
 
-      <Container className="relative flex flex-col items-center pt-[clamp(20px,5vw,96px)] pb-[310px] text-center lg:min-h-[clamp(0px,36.5vw,700px)] lg:flex-row lg:items-stretch lg:justify-between lg:py-[clamp(20px,5vw,96px)] lg:text-left">
+      <div className="px-gutter-framed relative flex flex-col items-center pt-[clamp(20px,5vw,96px)] pb-[310px] text-center lg:min-h-[clamp(0px,36.5vw,700px)] lg:flex-row lg:items-stretch lg:justify-between lg:py-[clamp(20px,5vw,96px)] lg:text-left">
         <div className="lg:w-[579px] lg:shrink-0">
           <Reveal>
             <p className="mb-[19px] text-[clamp(16px,1.25vw,24px)] leading-[1.17] font-medium">
@@ -92,7 +91,7 @@ export async function CtaFormSection() {
         {/* Десктоп: фото между текстом и формой */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 left-[clamp(340px,29.8vw,572px)] hidden aspect-[511/700] w-[clamp(300px,26.6vw,511px)] lg:block"
+          className="pointer-events-none absolute bottom-0 left-[calc(var(--gutter)-var(--frame-inset)+clamp(340px,29.8vw,572px))] hidden aspect-[511/700] w-[clamp(300px,26.6vw,511px)] lg:block"
         >
           <PersonImage media={person} />
         </div>
@@ -111,14 +110,14 @@ export async function CtaFormSection() {
             />
           </div>
         </div>
-      </Container>
+      </div>
     </section>
   );
 }
 
 export function CtaFormSectionSkeleton() {
   return (
-    <div className="mx-2 mb-[clamp(24px,2.7vw,52px)] md:mx-[1vw]">
+    <div className="container-frame mb-[clamp(24px,2.7vw,52px)]">
       <Skeleton className="h-[clamp(560px,36vw,700px)] w-full rounded-[12px]" />
     </div>
   );

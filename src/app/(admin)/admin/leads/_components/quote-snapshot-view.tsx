@@ -140,7 +140,7 @@ export function QuoteSnapshotView({ snapshot, hallName }: QuoteSnapshotViewProps
           {quote.warnings.length > 0 ? (
             <div
               role="alert"
-              className="flex gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-900 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-200"
+              className="border-badge bg-badge/15 text-badge-foreground flex gap-3 rounded-lg border p-4 text-sm"
             >
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
               <ul className="space-y-1">

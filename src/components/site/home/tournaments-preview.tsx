@@ -10,13 +10,20 @@ import { PrimaryButton } from "../primary-button";
 import { Reveal } from "../reveal";
 
 const SECTION_CLASS = "scroll-mt-24 py-[clamp(24px,4vw,77px)]";
-/** Внутренний блок шире основного контейнера и прижат вправо (как на старом сайте) */
+/**
+ * Общая сетка сайта (рамка 1920 + поле --gutter). С `lg` — две колонки, как `.reasons` старого
+ * сайта: sticky-блок слева (35.7vw, ≤686px) и список турниров на всю оставшуюся ширину.
+ */
 const INNER_CLASS =
-  "mx-auto w-[86vw] lg:mr-0 lg:ml-auto lg:flex lg:w-[91vw] lg:max-w-[1745px] lg:items-start lg:justify-between";
-const ASIDE_CLASS =
-  "w-full text-center lg:sticky lg:top-[88px] lg:w-[clamp(360px,35.7vw,686px)] lg:text-left";
-const LIST_CLASS = "mt-6 w-full lg:mt-0 lg:max-w-[1040px] lg:flex-1";
+  "container-site lg:grid lg:grid-cols-[minmax(0,min(35.7vw,686px))_minmax(0,1fr)] lg:items-start lg:gap-x-[clamp(32px,4vw,77px)]";
+const ASIDE_CLASS = "text-center lg:sticky lg:top-[88px] lg:text-left";
+const LIST_CLASS = "mt-6 lg:mt-0";
 const UPCOMING_LIMIT = 5;
+
+/** Высота строки/обложки: на мобильном — от ширины экрана, с `lg` — 15.625vw (300px при 1920) */
+const MEDIA_HEIGHT = "h-[clamp(160px,45vw,340px)] lg:h-[clamp(200px,15.625vw,300px)]";
+/** Колонка даты с `lg`: фиксированная ширина — обложки всех строк начинаются с одной вертикали */
+const DATE_COLUMN = "lg:w-[clamp(120px,10vw,190px)]";
 
 /** «Календарный план»: до 5 ближайших турниров и sticky-блок с кнопкой заявки. */
 export async function TournamentsPreview() {
@@ -73,15 +80,13 @@ export async function TournamentsPreview() {
   );
 }
 
-const ROW_CLASS =
-  "mb-[clamp(10px,2.6vw,50px)] flex flex-col lg:relative lg:h-[clamp(200px,15.625vw,300px)] lg:flex-row lg:items-start lg:justify-between";
-const DATE_CLASS =
-  "text-date mb-1.5 shrink-0 text-[13px] font-semibold whitespace-nowrap lg:mt-[clamp(80px,7.7vw,148px)] lg:mb-0 lg:pr-[38px] lg:text-[clamp(15px,1vw,19px)]";
-/** Обёртка обложки: на мобильном — на всю ширину под датой, на десктопе — справа */
-const MEDIA_CLASS =
-  "bg-muted relative h-[144px] w-full overflow-hidden rounded-[2px] lg:static lg:h-full lg:w-[clamp(480px,40.6vw,780px)] lg:overflow-visible";
+/** Мобильный: дата над обложкой; с `lg`: колонка даты (по центру по высоте) + обложка справа */
+const ROW_CLASS = "mb-[clamp(16px,2.6vw,50px)] flex flex-col lg:flex-row lg:items-center";
+const DATE_CLASS = `text-date mb-1.5 shrink-0 text-[13px] font-semibold sm:text-[15px] lg:mb-0 lg:pr-[clamp(12px,1.5vw,28px)] lg:text-right lg:text-[clamp(15px,1vw,19px)] lg:text-balance ${DATE_COLUMN}`;
+const MEDIA_CLASS = `bg-muted relative w-full min-w-0 overflow-hidden rounded-[2px] lg:flex-1 ${MEDIA_HEIGHT}`;
+/** Плашка внутри обложки, у её нижнего левого угла — не выходит за пределы фото */
 const PLATE_CLASS =
-  "absolute bottom-[clamp(10px,1.72vw,33px)] left-2 w-[90%] rounded-[10px] bg-white/80 px-[clamp(10px,2vw,38px)] py-[clamp(10px,1vw,19px)] text-[#1C1C1C] lg:left-[-1vw] lg:w-[clamp(360px,30.2vw,580px)]";
+  "absolute inset-x-[clamp(8px,1vw,19px)] bottom-[clamp(8px,1.72vw,33px)] rounded-[10px] bg-white/80 px-[clamp(10px,2vw,38px)] py-[clamp(8px,1vw,19px)] text-[#1C1C1C] sm:right-auto sm:max-w-[min(580px,80%)]";
 
 function TournamentRow({ tournament }: { tournament: PublicTournament }) {
   return (
@@ -95,10 +100,10 @@ function TournamentRow({ tournament }: { tournament: PublicTournament }) {
         {tournament.cover ? (
           <Picture
             asset={tournament.cover}
-            sizes="(min-width:1024px) 780px, 86vw"
+            sizes="(min-width:1920px) 900px, (min-width:1024px) 47vw, 100vw"
             alt={tournament.cover.alt || tournament.title}
             pictureClassName="block h-full"
-            className="h-full w-full rounded-[2px] object-cover"
+            className="h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
@@ -106,7 +111,9 @@ function TournamentRow({ tournament }: { tournament: PublicTournament }) {
           </div>
         )}
         <div className={PLATE_CLASS}>
-          <h3 className="text-xs font-medium lg:text-[clamp(14px,1vw,19px)]">{tournament.title}</h3>
+          <h3 className="text-xs font-medium sm:text-sm lg:text-[clamp(14px,1vw,19px)]">
+            {tournament.title}
+          </h3>
           {tournament.description ? (
             <p className="mt-1 line-clamp-2 text-xs leading-[1.5] lg:text-[clamp(13px,0.94vw,18px)]">
               {tournament.description}
@@ -129,7 +136,7 @@ function EmptyRow() {
   );
 }
 
-/** Заглушка: заголовок/кнопка слева, три строки турниров справа. */
+/** Заглушка в той же сетке: заголовок/кнопка слева, три строки «дата + обложка» справа. */
 export function TournamentsPreviewSkeleton() {
   return (
     <section aria-hidden="true" className={SECTION_CLASS}>
@@ -141,10 +148,14 @@ export function TournamentsPreviewSkeleton() {
         </div>
         <div className={LIST_CLASS}>
           {Array.from({ length: 3 }, (_, i) => (
-            <Skeleton
-              key={i}
-              className="mb-[clamp(10px,2.6vw,50px)] h-[144px] rounded-[2px] lg:h-[clamp(200px,15.625vw,300px)]"
-            />
+            <div key={i} className={ROW_CLASS}>
+              <div
+                className={`mb-1.5 shrink-0 lg:mb-0 lg:flex lg:justify-end lg:pr-[clamp(12px,1.5vw,28px)] ${DATE_COLUMN}`}
+              >
+                <Skeleton className="h-4 w-24 lg:w-3/4" />
+              </div>
+              <Skeleton className={`w-full rounded-[2px] lg:flex-1 ${MEDIA_HEIGHT}`} />
+            </div>
           ))}
         </div>
       </div>
