@@ -42,3 +42,26 @@
   - `src/lib/settings-defaults.ts` (`SiteSettings`, 20 ключей, `mergeSettings`);
   - `src/lib/queries/*` (`getSettings`, `getUpcomingTournaments(opDate)`, `getSeasonTournaments`, `getTournamentYears`, `getHalls`, `getTariffs`, `getExtraServices`, `getPenalties`, `getPriceFrom`, `getActivePromotions`, `getCarouselPromotions`, `getMenuTree`, `getBanquetSets`, `getGallery`, `getServices`, `getCurrentLegalDocument`, `getCalculatorCatalog`), тип `PublicMedia`, совместимый с `<Picture>`;
   - некэшируемая функция `fetchCalculatorCatalog(db)` в `queries/calculator-fetch.ts`, общая для сайта и сервера.
+
+## Волна 4 (+ общие правки)
+- **`cn()`** (`src/lib/utils.ts`) понимает кастомные размеры шрифта (`text-h1`, `text-h2`, `text-calendar-title`, `text-card-title`, `text-promo-title`, `text-price`, `text-hero-sub`, `text-badge-size`, `text-popup-title`, `text-body-lg`, `text-btn`), поэтому их можно смешивать с цветами. Размер бейджа — **`text-badge-size`**, а `text-badge` — это цвет.
+- **task-13**:
+  - `src/app/(site)/layout.tsx` (Header, `<main id="main-content">`, Footer, CookieBanner, Metrika — только после согласия);
+  - в `src/components/site/`: `Container` (`container.tsx`), `SectionTitle` (`section-title.tsx`, `text-h1`/`text-h2`), `PrimaryButton` (`primary-button.tsx`, `text-btn` + блик), `Reveal` (`reveal.tsx`, атрибут `data-reveal`), а также `header`, `mobile-menu`, `nav-items`, `footer`, `cookie-banner`, `cookie-consent`, `metrika`, `social-icons`, `back-to-top`;
+  - `not-found.tsx` в стиле старого сайта.
+- **task-14**:
+  - layout админки `src/app/(admin)/admin/layout.tsx` (sidebar со всеми разделами), дашборд;
+  - `/admin/media` (медиатека), `POST`/`GET /api/admin/media`;
+  - в `src/components/admin/`:
+    - `DataTable` (`columns`, `data`, `searchPlaceholder?`, `filters?`, `pageSize?`, `getRowHref?`, `emptyText?`, `toolbar?`; хелпер `sortableHeader`);
+    - `SortableList` (`items`, `onReorder(ids)`, `renderItem(item, ctx{dragHandle, moveUp, moveDown, canMoveUp, canMoveDown, index})`);
+    - `ImageUploadField` (`value`, `initialAsset?`, `onChange(mediaId, asset)`, `folder`, `label?`, `aspect?`);
+    - `MediaPicker` (`open`, `onOpenChange`, `onSelect(assets[])`, `multiple?`, `folder?`);
+    - `ConfirmDialog` (`trigger`, `title`, `description?`, `confirmLabel?`, `destructive?`, `onConfirm`);
+    - `FormActions` (`isSubmitting?`, `submitLabel?`, `cancelHref?`, `onDelete?`, `extra?`);
+    - `PageHeader` (`title`, `description?`, `actions?`, `backHref?`, `breadcrumbs?`).
+
+    Колбэки `onReorder`/`onConfirm`/`onDelete` можно передавать прямо из `adminAction`: результат `{ok:false}` откатывает изменение и показывает toast.
+  - в `src/lib/admin/`: `action.ts` (`adminAction(schema, (input, ctx:{userId, tx}) => …, {tags})` → `{ok:true,data}|{ok:false,error,fieldErrors?}`; `redirect()` внутри handler коммитит транзакцию; `ActionError` — для ошибок, показываемых пользователю), `audit.ts`, `media-dto.ts` (`MediaDto`), `media-queries.ts`, `media-client.ts`.
+- **task-15**: `scripts/import-legacy-images.ts` (`pnpm import:images --source C:\OSPanel\home\74.loc`). Галереи заполнены (hero 1, услуги по 5, bar 6, about 1, cta 2), у акций и всех 30 турниров есть обложки. В `public/images/`: `logo.png`, `logo.webp`, `work-steps-bg.webp`, `tournament-default.webp`.
+- **Важно для локального `next start`:** задать `UPLOAD_DIR=./.data/uploads` (в production по умолчанию `/data/uploads`).

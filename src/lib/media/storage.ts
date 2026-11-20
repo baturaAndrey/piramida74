@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { eq, sql } from "drizzle-orm";
+import type { DbOrTx } from "@/lib/admin/audit";
 import { db } from "@/lib/db";
 import { articles, mediaAssets, promotions, type MediaAsset } from "@/lib/schema";
 import { processImage } from "./process";
@@ -17,7 +18,23 @@ import {
 export type MediaUsage = { entity: string; label: string; count: number };
 
 export type DeleteMediaResult =
-  { ok: true } | { ok: false; reason: "not_found" | "in_use"; usages: MediaUsage[] };
+  | {
+      ok: true;
+      /**
+       * Абсолютные пути файлов вариантов. Без `opts.tx` они уже удалены; с `opts.tx` —
+       * НЕ удалены: вызывающий удаляет их через `removeMediaFiles` после коммита своей транзакции.
+       */
+      files: string[];
+    }
+  | { ok: false; reason: "not_found" | "in_use"; usages: MediaUsage[] };
+
+export type DeleteMediaOptions = {
+  /**
+   * Внешняя транзакция (например, `ctx.tx` из `adminAction`): удаление записи выполняется в ней,
+   * чтобы откатиться вместе с аудитом. Файлы с диска при этом не трогаются — см. `DeleteMediaResult.files`.
+   */
+  tx?: DbOrTx;
+};
 
 export type SaveImageOptions = {
   /** Логическая метка для медиатеки (не участвует в пути на диске) */
@@ -80,7 +97,8 @@ export function isInvalidMediaPathError(error: unknown): boolean {
   return error instanceof Error && error.message === INVALID_MEDIA_PATH;
 }
 
-async function removeFilesQuietly(files: string[]): Promise<void> {
+/** Best-effort удаление файлов (ошибки только логируются). Вызывать после коммита удаления записи. */
+export async function removeMediaFiles(files: string[]): Promise<void> {
   await Promise.all(
     files.map(async (file) => {
       try {
@@ -104,7 +122,7 @@ export async function saveImage(file: File | Buffer, opts: SaveImageOptions): Pr
   if (!isBuffer && file.size > MAX_IMAGE_BYTES) {
     throw new MediaValidationError("Файл больше 10 МБ", "TOO_LARGE");
   }
-  const buf =isBuffer ? file : Buffer.from(await file.arrayBuffer());
+  const buf = isBuffer ? file : Buffer.from(await file.arrayBuffer());
   const originalName = sanitizeOriginalName(opts.originalName ?? (isBuffer ? "image" : file.name));
 
   const folder = assertFolder(opts.folder);
@@ -150,7 +168,7 @@ export async function saveImage(file: File | Buffer, opts: SaveImageOptions): Pr
     if (!asset) throw new Error("Не удалось сохранить запись media_assets");
     return asset;
   } catch (error) {
-    await removeFilesQuietly(written);
+    await removeMediaFiles(written);
     throw error;
   }
 }
@@ -190,13 +208,13 @@ function getForeignKeyRefs(): Promise<ForeignKeyRef[]> {
   return foreignKeyRefsPromise;
 }
 
-async function findForeignKeyUsages(id: string): Promise<MediaUsage[]> {
+async function findForeignKeyUsages(id: string, executor: DbOrTx): Promise<MediaUsage[]> {
   const refs = await getForeignKeyRefs();
   const counts = await Promise.all(
     refs.map(async (ref) => {
       // Идентификаторы берутся из системного каталога, не от пользователя
       const table = sql`${sql.identifier(ref.schemaName)}.${sql.identifier(ref.tableName)}`;
-      const rows = await db.execute<{ count: number }>(
+      const rows = await executor.execute<{ count: number }>(
         sql`SELECT count(*)::int AS count FROM ${table} WHERE ${sql.identifier(ref.columnName)} = ${id}`
       );
       const count = Number(rows[0]?.count ?? 0);
@@ -232,22 +250,22 @@ function markdownUsage(
   };
 }
 
-async function findMarkdownUsages(assetPath: string): Promise<MediaUsage[]> {
+async function findMarkdownUsages(assetPath: string, executor: DbOrTx): Promise<MediaUsage[]> {
   const pattern = `%${escapeLike(`/media/${assetPath}`)}%`;
 
   const [articleRows, articleCount, promoRows, promoCount] = await Promise.all([
-    db
+    executor
       .select({ title: articles.title })
       .from(articles)
       .where(sql`${articles.body} ILIKE ${pattern}`)
       .limit(MARKDOWN_USAGE_LABEL_LIMIT),
-    db.$count(articles, sql`${articles.body} ILIKE ${pattern}`),
-    db
+    executor.$count(articles, sql`${articles.body} ILIKE ${pattern}`),
+    executor
       .select({ title: promotions.title })
       .from(promotions)
       .where(sql`${promotions.description} ILIKE ${pattern}`)
       .limit(MARKDOWN_USAGE_LABEL_LIMIT),
-    db.$count(promotions, sql`${promotions.description} ILIKE ${pattern}`),
+    executor.$count(promotions, sql`${promotions.description} ILIKE ${pattern}`),
   ]);
 
   return [
@@ -266,16 +284,19 @@ async function findMarkdownUsages(assetPath: string): Promise<MediaUsage[]> {
   ].filter((u): u is MediaUsage => u !== null);
 }
 
-/** Где используется ассет: все FK на media_assets + упоминания `/media/<path>` в markdown. */
-export async function findMediaUsages(id: string): Promise<MediaUsage[]> {
-  const [asset] = await db
+/**
+ * Где используется ассет: все FK на media_assets + упоминания `/media/<path>` в markdown.
+ * `executor` — `db` или транзакция, чтобы видеть её незакоммиченные изменения.
+ */
+export async function findMediaUsages(id: string, executor: DbOrTx = db): Promise<MediaUsage[]> {
+  const [asset] = await executor
     .select({ path: mediaAssets.path })
     .from(mediaAssets)
     .where(eq(mediaAssets.id, id))
     .limit(1);
   const [fkUsages, mdUsages] = await Promise.all([
-    findForeignKeyUsages(id),
-    asset ? findMarkdownUsages(asset.path) : Promise.resolve([]),
+    findForeignKeyUsages(id, executor),
+    asset ? findMarkdownUsages(asset.path, executor) : Promise.resolve([]),
   ]);
   return [...fkUsages, ...mdUsages];
 }
@@ -289,29 +310,7 @@ function pgErrorCode(error: unknown): string | undefined {
   return undefined;
 }
 
-/** Удаляет ассет, если он нигде не используется; файлы вариантов — после коммита (best-effort). */
-export async function deleteMedia(id: string): Promise<DeleteMediaResult> {
-  const [asset] = await db.select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1);
-  if (!asset) return { ok: false, reason: "not_found", usages: [] };
-
-  const usages = await findMediaUsages(id);
-  if (usages.length > 0) return { ok: false, reason: "in_use", usages };
-
-  let deleted: { id: string }[];
-  try {
-    deleted = await db.transaction((tx) =>
-      tx.delete(mediaAssets).where(eq(mediaAssets.id, id)).returning({ id: mediaAssets.id })
-    );
-  } catch (error) {
-    // Гонка: ссылка появилась между проверкой и удалением — сработал FK `restrict`
-    const code = pgErrorCode(error);
-    if (code && PG_REFERENCE_VIOLATION_CODES.has(code)) {
-      return { ok: false, reason: "in_use", usages: await findMediaUsages(id) };
-    }
-    throw error;
-  }
-  if (deleted.length === 0) return { ok: false, reason: "not_found", usages: [] };
-
+function variantFiles(asset: MediaAsset): string[] {
   const files: string[] = [];
   for (const v of asset.variants) {
     try {
@@ -320,6 +319,46 @@ export async function deleteMedia(id: string): Promise<DeleteMediaResult> {
       console.warn(`[media] некорректный путь варианта: ${asset.path}-${v.w}.${v.format}`);
     }
   }
-  await removeFilesQuietly(files);
-  return { ok: true };
+  return files;
+}
+
+/**
+ * Удаляет ассет, если он нигде не используется.
+ * Без `opts.tx` — в собственной транзакции, файлы вариантов удаляются после коммита (best-effort).
+ * С `opts.tx` — в переданной транзакции; файлы НЕ удаляются, их пути возвращаются в `files`,
+ * и вызывающий удаляет их через `removeMediaFiles` только после коммита (иначе откат транзакции
+ * оставил бы запись без файлов).
+ */
+export async function deleteMedia(
+  id: string,
+  opts: DeleteMediaOptions = {}
+): Promise<DeleteMediaResult> {
+  const executor = opts.tx ?? db;
+  const [asset] = await executor.select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1);
+  if (!asset) return { ok: false, reason: "not_found", usages: [] };
+
+  const usages = await findMediaUsages(id, executor);
+  if (usages.length > 0) return { ok: false, reason: "in_use", usages };
+
+  let deleted: { id: string }[];
+  try {
+    // Для `db` это транзакция, для внешней транзакции — SAVEPOINT: при нарушении FK откатывается
+    // только DELETE, и транзакция остаётся пригодной для повторного поиска использований.
+    deleted = await executor.transaction((sp) =>
+      sp.delete(mediaAssets).where(eq(mediaAssets.id, id)).returning({ id: mediaAssets.id })
+    );
+  } catch (error) {
+    // Гонка: ссылка появилась между проверкой и удалением — сработал FK `restrict`
+    const code = pgErrorCode(error);
+    if (code && PG_REFERENCE_VIOLATION_CODES.has(code)) {
+      return { ok: false, reason: "in_use", usages: await findMediaUsages(id, executor) };
+    }
+    throw error;
+  }
+  if (deleted.length === 0) return { ok: false, reason: "not_found", usages: [] };
+
+  const files = variantFiles(asset);
+  // Собственная транзакция уже закоммичена — файлы можно удалять сразу
+  if (!opts.tx) await removeMediaFiles(files);
+  return { ok: true, files };
 }

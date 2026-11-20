@@ -1,0 +1,25 @@
+/*
+ * Появление при прокрутке. Атрибут data-reveal выставляет только клиент (reveal.tsx),
+ * поэтому без JS и до гидрации контент виден сразу.
+ */
+.reveal[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translateY(clamp(24px, 5.2vw, 100px));
+}
+
+.reveal[data-reveal="shown"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal[data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

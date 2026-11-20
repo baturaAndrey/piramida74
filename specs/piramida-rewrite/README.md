@@ -130,9 +130,9 @@ graph TD
 - [x] [task-12-public-queries](./tasks/task-12-public-queries.md) — Кэшируемые запросы и теги
 
 ### Wave 4
-- [ ] [task-13-site-layout](./tasks/task-13-site-layout.md) — Шапка, футер, cookie-баннер, Метрика, 404
-- [ ] [task-14-admin-shell](./tasks/task-14-admin-shell.md) — Каркас админки, общие компоненты, загрузка, аудит
-- [ ] [task-15-legacy-images-import](./tasks/task-15-legacy-images-import.md) — Импорт фото со старого сайта
+- [x] [task-13-site-layout](./tasks/task-13-site-layout.md) — Шапка, футер, cookie-баннер, Метрика, 404
+- [x] [task-14-admin-shell](./tasks/task-14-admin-shell.md) — Каркас админки, общие компоненты, загрузка, аудит
+- [x] [task-15-legacy-images-import](./tasks/task-15-legacy-images-import.md) — Импорт фото со старого сайта
 
 ### Wave 5
 - [ ] [task-16-admin-tournaments-promotions](./tasks/task-16-admin-tournaments-promotions.md) — Админка: турниры, серии, акции

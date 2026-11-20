@@ -124,7 +124,7 @@
 - Маршруты: `/login`, `/forgot-password`, `/reset-password`. `proxy.ts` — matcher `['/admin/:path*']`, оптимистичный редирект по cookie.
 
 ## Медиа (задача 09)
-- `src/lib/media/storage.ts`: `saveImage(file: File | Buffer, opts: { folder: string; alt?: string; userId?: string; originalName?: string }) → Promise<MediaAsset>` (`originalName` обязателен по смыслу для `Buffer`, для `File` по умолчанию `file.name`), `deleteMedia(id)` (проверяет использование), `resolveMediaPath(rel)` (защита от traversal).
+- `src/lib/media/storage.ts`: `saveImage(file: File | Buffer, opts: { folder: string; alt?: string; userId?: string; originalName?: string }) → Promise<MediaAsset>` (`originalName` обязателен по смыслу для `Buffer`, для `File` по умолчанию `file.name`; сохраняется **не как передан**, а через `sanitizeOriginalName`: только базовое имя без пути, без опасных символов, с обрезкой длины, пустое → `"image"`), `deleteMedia(id, opts?: { tx?: DbOrTx })` (проверяет использование; результат `{ ok: true; files } | { ok: false; reason: 'not_found' | 'in_use'; usages }`; без `tx` удаляет запись в своей транзакции и файлы сразу после коммита, с `tx` — удаляет запись во внешней транзакции, а файлы НЕ трогает: вызывающий передаёт `files` в `removeMediaFiles(files)` после коммита), `removeMediaFiles(files)` (best-effort), `resolveMediaPath(rel)` (защита от traversal).
 - Варианты: ширины `[640, 1280, 1920]` (не больше исходной), форматы `avif` (quality 55) и `webp` (quality 75), файлы `<uuid>-<w>.<fmt>`, blur — webp шириной 16 в base64.
 - `src/lib/media/url.ts`: `mediaUrl(asset, w?, fmt?)` → `/media/<path>-<w>.<fmt>`.
 - `src/components/media/picture.tsx`: `<Picture asset sizes alt priority className />` — рендерит `<picture>` с srcset для avif и webp.
