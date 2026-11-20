@@ -147,8 +147,8 @@ graph TD
 - [x] [task-25-blog-public](./tasks/task-25-blog-public.md) — Блог: страницы, RSS, OG, тизер
 
 ### Wave 6
-- [ ] [task-26-blog-admin](./tasks/task-26-blog-admin.md) — Блог в админке: статьи, рубрики, теги, авторы (медиатека — `/admin/media` из задачи 14)
-- [ ] [task-27-home-assembly](./tasks/task-27-home-assembly.md) — Сборка `src/app/(site)/page.tsx`
+- [x] [task-26-blog-admin](./tasks/task-26-blog-admin.md) — Блог в админке: статьи, рубрики, теги, авторы (медиатека — `/admin/media` из задачи 14)
+- [x] [task-27-home-assembly](./tasks/task-27-home-assembly.md) — Сборка `src/app/(site)/page.tsx`
 
 ### Wave 7
 - [ ] [task-28-qa-verification](./tasks/task-28-qa-verification.md) — Playwright e2e, визуальная сверка, Lighthouse, security, Docker

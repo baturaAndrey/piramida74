@@ -46,7 +46,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ru">
+    <html lang="ru" data-scroll-behavior="smooth">
       <body className={`${onest.variable} min-h-screen antialiased`}>
         {/* Cache Components: страницы, читающие headers()/cookies() без своего Suspense, не ломают пререндер */}
         <Suspense fallback={null}>{children}</Suspense>

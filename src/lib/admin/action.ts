@@ -54,12 +54,16 @@ function toFieldErrors(error: z.ZodError): Record<string, string[]> {
 /**
  * Обёртка Server Action админки:
  * проверка роли → zod → транзакция с handler'ом (он же пишет аудит через `ctx.tx`)
- * → `updateTag` для тегов (только после успешного коммита) → `{ ok: true, data }`.
+ * → `updateTag` для тегов и `afterCommit` (только после успешного коммита) → `{ ok: true, data }`.
  */
 export function adminAction<S extends z.ZodType, T>(
   schema: S,
   handler: (input: z.output<S>, ctx: ActionCtx) => Promise<T>,
-  opts: { tags: TagsOption<z.output<S>, T> }
+  opts: {
+    tags: TagsOption<z.output<S>, T>;
+    /** Сброс внешних (не `'use cache'`) кэшей — только после успешного коммита */
+    afterCommit?: () => void;
+  }
 ): (input: z.input<S>) => Promise<ActionResult<T>> {
   return async (input) => {
     let userId: string;
@@ -93,6 +97,7 @@ export function adminAction<S extends z.ZodType, T>(
       // `result` при redirect() — undefined: функция тегов должна это допускать
       const tags = typeof opts.tags === "function" ? opts.tags(parsed.data, data) : opts.tags;
       for (const tag of new Set(tags)) updateTag(tag);
+      opts.afterCommit?.();
       if (redirectSignal !== NO_REDIRECT) throw redirectSignal;
       return { ok: true, data };
     } catch (error) {

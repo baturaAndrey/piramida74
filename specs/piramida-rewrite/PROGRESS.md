@@ -97,3 +97,19 @@
   - `src/lib/notify/channel-status.ts`;
   - в сайдбар админки добавлены «Услуги», «Юр. документы», «Серии»;
   - добавлена страница `src/app/(admin)/admin/not-found.tsx`.
+
+## Волна 6
+- **task-26**:
+  - админка блога: `/admin/blog/{articles,rubrics,tags,authors}` и `/admin/blog` (редирект на статьи);
+  - логика в `src/lib/actions/blog-*.ts`, `src/lib/blog-admin/*`, `src/lib/validation/blog.ts`;
+  - публикация по расписанию в зоне Екатеринбурга, подписанный предпросмотр;
+  - при смене slug создаётся строка в `redirects` (301).
+- **task-27**: `src/app/(site)/page.tsx` — главная в порядке старого сайта плюс блоки «Калькулятор» и «Из блога»:
+  - у каждой секции свой Suspense и skeleton;
+  - на странице есть JSON-LD LocalBusiness;
+  - OG-картинка кэшируется (`home-og.ts`).
+- **Общее**:
+  - `src/proxy.ts` отдаёт для `/blog/:slug` настоящие 200, 301 (по таблице `redirects`) и 404. Поиск slug — `src/lib/blog-route/lookup.ts` (кэш на 60 с, сбрасывается `bumpBlogRouteCache` после действий в админке);
+  - у `adminAction` появилась опция `afterCommit`;
+  - в корневом layout стоит `data-scroll-behavior="smooth"`;
+  - `tsBuildInfoFile` вынесен в `node_modules/.cache`.
