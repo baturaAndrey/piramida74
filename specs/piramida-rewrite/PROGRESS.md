@@ -65,3 +65,35 @@
   - в `src/lib/admin/`: `action.ts` (`adminAction(schema, (input, ctx:{userId, tx}) => …, {tags})` → `{ok:true,data}|{ok:false,error,fieldErrors?}`; `redirect()` внутри handler коммитит транзакцию; `ActionError` — для ошибок, показываемых пользователю), `audit.ts`, `media-dto.ts` (`MediaDto`), `media-queries.ts`, `media-client.ts`.
 - **task-15**: `scripts/import-legacy-images.ts` (`pnpm import:images --source C:\OSPanel\home\74.loc`). Галереи заполнены (hero 1, услуги по 5, bar 6, about 1, cta 2), у акций и всех 30 турниров есть обложки. В `public/images/`: `logo.png`, `logo.webp`, `work-steps-bg.webp`, `tournament-default.webp`.
 - **Важно для локального `next start`:** задать `UPLOAD_DIR=./.data/uploads` (в production по умолчанию `/data/uploads`).
+
+## Волна 5
+- **task-16**: админка турниров (`/admin/tournaments`, `new?from=<id>` — дублирование, `/admin/tournaments/series`) и акций (`/admin/promotions`).
+- **task-17**: `/admin/pricing` — вкладки «Залы», «Тарифы» (валидация пересечений и «дыр»), «Доп. услуги», «Штрафы».
+- **task-18**:
+  - `/admin/menu`: категории, позиции, варианты, сетки цен, добавки, массовое изменение цен;
+  - `/admin/banquet-sets`.
+
+  Коды позиций стабильны.
+- **task-19**:
+  - админка: `/admin/galleries`, `/admin/services`, `/admin/settings`, `/admin/legal`, `/admin/leads` (+ `[id]`, повтор уведомления), `/admin/account` (пароль, 2FA с QR);
+  - API: `GET /api/admin/leads/export` (CSV), `POST /api/cron/retention`.
+- **task-20**: в `src/components/site/home/` — `Hero`, `PromotionsCarousel`, `ServicesTabs`, `TournamentsPreview`, `BarSection`, `PriceAccordion` (у каждого есть `*Skeleton`). Это async server components без пропсов, `connection()` вызывается внутри.
+- **task-21**: в `src/components/site/home/` — `AboutSection`, `BookingSteps`, `CtaFormSection`, `ContactsSection` (+ `*Skeleton`), `MapFacade`. Картинки в `public/images/home/*`.
+- **task-22**: страницы `/menu`, `/prices`, `/tournaments`.
+- **task-23**:
+  - страницы `/politika`, `/soglasie`;
+  - `sitemap.ts`, `robots.ts`, `redirects()` в `next.config.ts`, 410 для `/uploads/**` и `/public/**`;
+  - `src/lib/seo/metadata.ts` (`buildMetadata`, `absoluteUrl`);
+  - компонент `<LocalBusinessJsonLd />` (`src/components/seo/local-business-jsonld.tsx`).
+- **task-24**: `/calculator` (nuqs), `src/components/calculator/*`, `HomeCalculatorTeaser` (`src/components/calculator/home-calculator-teaser.tsx`).
+- **task-25**:
+  - `src/lib/content/*` (markdown, shortcodes, `preview-token.ts`: `signPreviewToken`/`verifyPreviewToken`);
+  - `src/lib/queries/blog.ts` (+ экспорт `publishedCondition`);
+  - `src/components/blog/*` (в т.ч. `BlogTeaser` в `blog-teaser.tsx`, `ArticleBody`/`RichText` — изоморфные);
+  - страницы `/blog`, `/blog/[slug]` (статья или рубрика, OG-картинка), `/blog/preview/[id]?t=`, `/blog/rss.xml`, `/authors/[slug]`;
+  - `POST /api/cron/blog`.
+- **Общее**:
+  - `src/lib/cron-auth.ts` (`isValidCronRequest`);
+  - `src/lib/notify/channel-status.ts`;
+  - в сайдбар админки добавлены «Услуги», «Юр. документы», «Серии»;
+  - добавлена страница `src/app/(admin)/admin/not-found.tsx`.

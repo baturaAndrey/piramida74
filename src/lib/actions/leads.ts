@@ -8,6 +8,7 @@ import { calculateQuote, type Quote } from "@/lib/calculator";
 import { minToClock } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { getClientEnv } from "@/lib/env";
+import { channelStatus } from "@/lib/notify/channel-status";
 import { sendEmail } from "@/lib/notify/email";
 import {
   type LeadForNotify,
@@ -24,7 +25,6 @@ import {
   type LeadNotifyStatus,
   leads,
   type NewLead,
-  type NotifyChannelStatus,
   promotions,
   siteSettings,
   tournaments,
@@ -249,18 +249,6 @@ async function readTelegramIncludePii(): Promise<boolean> {
     .where(eq(siteSettings.key, PII_SETTING_KEY))
     .limit(1);
   return row?.value === true;
-}
-
-function channelStatus(
-  result: PromiseSettledResult<{ ok: boolean; error?: string }>
-): NotifyChannelStatus {
-  const at = new Date().toISOString();
-  if (result.status === "rejected") {
-    const error = result.reason instanceof Error ? result.reason.message : "unknown error";
-    return { ok: false, error, at };
-  }
-  const { ok, error } = result.value;
-  return error === undefined ? { ok, at } : { ok, error, at };
 }
 
 /** Отправка email + Telegram и запись результата в leads.notifyStatus. Никогда не бросает. */

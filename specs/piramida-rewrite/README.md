@@ -135,16 +135,16 @@ graph TD
 - [x] [task-15-legacy-images-import](./tasks/task-15-legacy-images-import.md) — Импорт фото со старого сайта
 
 ### Wave 5
-- [ ] [task-16-admin-tournaments-promotions](./tasks/task-16-admin-tournaments-promotions.md) — Админка: турниры, серии, акции
-- [ ] [task-17-admin-pricing](./tasks/task-17-admin-pricing.md) — Админка: залы, тарифы, доп. услуги, штрафы
-- [ ] [task-18-admin-menu-sets](./tasks/task-18-admin-menu-sets.md) — Админка: меню, варианты, сетки цен, сеты
-- [ ] [task-19-admin-galleries-settings-leads](./tasks/task-19-admin-galleries-settings-leads.md) — Админка: галереи, услуги, настройки, заявки, аккаунт, cron
-- [ ] [task-20-home-sections-top](./tasks/task-20-home-sections-top.md) — Hero, акции, услуги, календарь, бар, прайс
-- [ ] [task-21-home-sections-bottom](./tasks/task-21-home-sections-bottom.md) — О клубе, бронирование, CTA, контакты и карта
-- [ ] [task-22-pages-menu-prices-tournaments](./tasks/task-22-pages-menu-prices-tournaments.md) — `/menu`, `/prices`, `/tournaments`
-- [ ] [task-23-legal-seo-redirects](./tasks/task-23-legal-seo-redirects.md) — `/politika`, `/soglasie`, sitemap, robots, JSON-LD, редиректы
-- [ ] [task-24-calculator-ui](./tasks/task-24-calculator-ui.md) — `/calculator`, nuqs, отправка, блок для главной
-- [ ] [task-25-blog-public](./tasks/task-25-blog-public.md) — Блог: страницы, RSS, OG, тизер
+- [x] [task-16-admin-tournaments-promotions](./tasks/task-16-admin-tournaments-promotions.md) — Админка: турниры, серии, акции
+- [x] [task-17-admin-pricing](./tasks/task-17-admin-pricing.md) — Админка: залы, тарифы, доп. услуги, штрафы
+- [x] [task-18-admin-menu-sets](./tasks/task-18-admin-menu-sets.md) — Админка: меню, варианты, сетки цен, сеты
+- [x] [task-19-admin-galleries-settings-leads](./tasks/task-19-admin-galleries-settings-leads.md) — Админка: галереи, услуги, настройки, заявки, аккаунт, cron
+- [x] [task-20-home-sections-top](./tasks/task-20-home-sections-top.md) — Hero, акции, услуги, календарь, бар, прайс
+- [x] [task-21-home-sections-bottom](./tasks/task-21-home-sections-bottom.md) — О клубе, бронирование, CTA, контакты и карта
+- [x] [task-22-pages-menu-prices-tournaments](./tasks/task-22-pages-menu-prices-tournaments.md) — `/menu`, `/prices`, `/tournaments`
+- [x] [task-23-legal-seo-redirects](./tasks/task-23-legal-seo-redirects.md) — `/politika`, `/soglasie`, sitemap, robots, JSON-LD, редиректы
+- [x] [task-24-calculator-ui](./tasks/task-24-calculator-ui.md) — `/calculator`, nuqs, отправка, блок для главной
+- [x] [task-25-blog-public](./tasks/task-25-blog-public.md) — Блог: страницы, RSS, OG, тизер
 
 ### Wave 6
 - [ ] [task-26-blog-admin](./tasks/task-26-blog-admin.md) — Блог в админке: статьи, рубрики, теги, авторы (медиатека — `/admin/media` из задачи 14)

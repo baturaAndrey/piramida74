@@ -116,6 +116,26 @@ describe("toQuoteInput", () => {
     expect(toQuoteInput({ ...baseState, g: 9 }, catalog, "2026-01-01").tables).toBe(3);
   });
 
+  it("tables по умолчанию не превышает tablesCount зала", () => {
+    // 60 гостей / 4 места = 15 столов, но в общем зале всего 12
+    expect(toQuoteInput({ ...baseState, g: 60 }, catalog, "2026-01-01").tables).toBe(12);
+    expect(toQuoteInput({ ...baseState, g: 48 }, catalog, "2026-01-01").tables).toBe(12);
+  });
+
+  it("явный tables из URL не трогается", () => {
+    expect(toQuoteInput({ ...baseState, g: 60, tables: 3 }, catalog, "2026-01-01").tables).toBe(3);
+  });
+
+  it("tables по умолчанию не меньше 1, даже если tablesCount = 0", () => {
+    const emptyHall: CalcHall = { ...COMMON, id: "h-empty", slug: "empty", tablesCount: 0 };
+    const input = toQuoteInput(
+      { ...baseState, g: 9, hall: "empty" },
+      { ...catalog, halls: [emptyHall] },
+      "2026-01-01"
+    );
+    expect(input.tables).toBe(1);
+  });
+
   it("VIP-зал → 1 стол", () => {
     expect(toQuoteInput({ ...baseState, g: 9, hall: "vip-1" }, catalog, "2026-01-01").tables).toBe(
       1
@@ -171,6 +191,21 @@ describe("serializeCalculator", () => {
     expect(q.get("i")).toBe("abc123-x9y8z7:2");
     expect(q.has("x")).toBe(false);
     expect(q.has("s")).toBe(false);
+  });
+
+  it("округляет durationMin до ближайших 30 мин и зажимает в 0.5..12 ч", () => {
+    const h = (durationMin: number) => query(serializeCalculator({ durationMin })).get("h");
+    expect(h(100)).toBe("1.5"); // 1.666… ч → 1.5
+    expect(h(140)).toBe("2.5"); // 2.333… ч → 2.5
+    expect(h(195)).toBe("3.5"); // ровно между 3 и 3.5 → вверх
+    expect(h(10)).toBe("0.5");
+    expect(h(1000)).toBe("12");
+    // Каждое значение h проходит обратно через hoursParser
+    for (const min of [100, 140, 195, 10, 1000]) {
+      expect(parseCalculatorSearchParams(query(serializeCalculator({ durationMin: min })))).toEqual(
+        expect.objectContaining({ durationMin: expect.any(Number) })
+      );
+    }
   });
 
   it("не пишет hall без каталога или для неизвестного зала", () => {

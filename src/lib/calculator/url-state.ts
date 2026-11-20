@@ -1,7 +1,7 @@
 // Только nuqs/server: модуль используется и в серверных страницах, и в клиентском компоненте
 import { createParser, createSerializer, parseAsBoolean } from "nuqs/server";
 import { clockToOpMin, isValidIsoDate, opMinToClock } from "./calculate";
-import type { CalculatorCatalog, QuoteInput } from "./types";
+import type { CalcHall, CalculatorCatalog, QuoteInput } from "./types";
 
 export type KeyQty = { key: string; qty: number };
 
@@ -73,7 +73,7 @@ export const calculatorParsers = {
   h: hoursParser.withDefault(3), // длительность в часах, шаг 0.5
   g: intParser(1, 200).withDefault(4), // гости
   hall: slugParser, // slug зала; нет → первый зал каталога
-  tables: intParser(1, 50), // нет → ceil(g / seatsPerTable)
+  tables: intParser(1, 50), // нет → min(tablesCount, ceil(g / seatsPerTable))
   p: parseAsBoolean.withDefault(false), // пенсионер
   x: keyQtyParser.withDefault([]), // доп. услуги: id:qty
   s: keyQtyParser.withDefault([]), // сеты: code:qty
@@ -95,6 +95,18 @@ export type CalculatorUrlState = {
 
 const FALLBACK_SEATS_PER_TABLE = 4;
 
+/**
+ * Авто-режим столов: VIP — 1; иначе `ceil(g / seatsPerTable)`, но не больше столов в зале
+ * (иначе считали бы аренду несуществующих столов) и не меньше 1.
+ */
+function defaultTables(hall: CalcHall | undefined, guests: number): number {
+  if (hall?.kind === "vip") return 1;
+  const seats = hall?.seatsPerTable || FALLBACK_SEATS_PER_TABLE;
+  const needed = Math.ceil(guests / seats);
+  // Та же формула, что autoTables() в UI калькулятора — серверный расчёт и форма совпадают
+  return Math.max(1, hall ? Math.min(hall.tablesCount, needed) : needed);
+}
+
 /** Состояние URL → QuoteInput (подставляет дефолты, переводит часы в минуты суток) */
 export function toQuoteInput(
   state: CalculatorUrlState,
@@ -102,15 +114,13 @@ export function toQuoteInput(
   todayOpDate: string
 ): QuoteInput {
   const hall = catalog.halls.find((h) => h.slug === state.hall) ?? catalog.halls[0];
-  const seats = hall?.seatsPerTable || FALLBACK_SEATS_PER_TABLE;
-  const defaultTables = hall?.kind === "vip" ? 1 : Math.ceil(state.g / seats);
   return {
     opDate: state.d ?? todayOpDate,
     startMin: clockToOpMin(state.t),
     durationMin: Math.round(state.h * 60),
     guests: state.g,
     hallId: hall?.id ?? "",
-    tables: state.tables ?? defaultTables,
+    tables: state.tables ?? defaultTables(hall, state.g),
     pensioner: state.p,
     extras: state.x.map((e) => ({ id: e.key, qty: e.qty })),
     sets: state.s.map((e) => ({ code: e.key, qty: e.qty })),
@@ -119,6 +129,18 @@ export function toQuoteInput(
 }
 
 type HallsCatalog = Pick<CalculatorCatalog, "halls">;
+
+const MIN_HOURS = 0.5;
+const MAX_HOURS = 12;
+
+/**
+ * Минуты → часы для `h`: округление до ближайших 30 мин и зажим в 0.5..12 —
+ * иначе hoursParser отбросит значение при чтении ссылки (например, 100 мин → 1.666…).
+ */
+function durationMinToHours(durationMin: number): number {
+  const halfHours = Math.round(durationMin / 30) / 2;
+  return Math.min(MAX_HOURS, Math.max(MIN_HOURS, halfHours));
+}
 
 // В nuqs v2 clearOnDefault включён по умолчанию: значения, равные default, в URL не пишутся
 const serializeState = createSerializer(calculatorParsers);
@@ -138,7 +160,7 @@ export function serializeCalculator(input: Partial<QuoteInput>, catalog?: HallsC
   return serializeState({
     d: input.opDate ?? null,
     t: input.startMin != null ? opMinToClock(input.startMin) : null,
-    h: input.durationMin != null ? input.durationMin / 60 : null,
+    h: input.durationMin != null ? durationMinToHours(input.durationMin) : null,
     g: input.guests ?? null,
     hall: slug ?? null,
     tables: input.tables ?? null,

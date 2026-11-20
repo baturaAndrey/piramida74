@@ -1,0 +1,215 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - link "Пирамида · админка" [ref=e7] [cursor=pointer]:
+        - /url: /admin
+      - list [ref=e11]:
+        - listitem [ref=e12]:
+          - link "Сводка" [ref=e13] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=e14]
+            - generic [ref=e19]: Сводка
+        - listitem [ref=e20]:
+          - link "Заявки" [ref=e21] [cursor=pointer]:
+            - /url: /admin/leads
+            - img [ref=e22]
+            - generic [ref=e25]: Заявки
+          - generic:
+            - 'generic "Новых заявок: 1"': "1"
+        - listitem [ref=e26]:
+          - link "Турниры" [ref=e27] [cursor=pointer]:
+            - /url: /admin/tournaments
+            - img [ref=e28]
+            - generic [ref=e34]: Турниры
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Все турниры" [ref=e37] [cursor=pointer]:
+                - /url: /admin/tournaments
+                - generic [ref=e38]: Все турниры
+            - listitem [ref=e39]:
+              - link "Серии" [ref=e40] [cursor=pointer]:
+                - /url: /admin/tournaments/series
+                - generic [ref=e41]: Серии
+        - listitem [ref=e42]:
+          - link "Акции" [ref=e43] [cursor=pointer]:
+            - /url: /admin/promotions
+            - img [ref=e44]
+            - generic [ref=e48]: Акции
+        - listitem [ref=e49]:
+          - link "Цены" [ref=e50] [cursor=pointer]:
+            - /url: /admin/pricing
+            - img [ref=e51]
+            - generic [ref=e54]: Цены
+        - listitem [ref=e55]:
+          - link "Услуги" [ref=e56] [cursor=pointer]:
+            - /url: /admin/services
+            - img [ref=e57]
+            - generic [ref=e60]: Услуги
+        - listitem [ref=e61]:
+          - link "Меню" [ref=e62] [cursor=pointer]:
+            - /url: /admin/menu
+            - img [ref=e63]
+            - generic [ref=e68]: Меню
+        - listitem [ref=e69]:
+          - link "Банкетные сеты" [ref=e70] [cursor=pointer]:
+            - /url: /admin/banquet-sets
+            - img [ref=e71]
+            - generic [ref=e77]: Банкетные сеты
+        - listitem [ref=e78]:
+          - link "Галереи" [ref=e79] [cursor=pointer]:
+            - /url: /admin/galleries
+            - img [ref=e80]
+            - generic [ref=e85]: Галереи
+        - listitem [ref=e86]:
+          - link "Блог" [ref=e87] [cursor=pointer]:
+            - /url: /admin/blog
+            - img [ref=e88]
+            - generic [ref=e91]: Блог
+          - list [ref=e92]:
+            - listitem [ref=e93]:
+              - link "Статьи" [ref=e94] [cursor=pointer]:
+                - /url: /admin/blog/articles
+                - generic [ref=e95]: Статьи
+            - listitem [ref=e96]:
+              - link "Рубрики" [ref=e97] [cursor=pointer]:
+                - /url: /admin/blog/rubrics
+                - generic [ref=e98]: Рубрики
+            - listitem [ref=e99]:
+              - link "Теги" [ref=e100] [cursor=pointer]:
+                - /url: /admin/blog/tags
+                - generic [ref=e101]: Теги
+            - listitem [ref=e102]:
+              - link "Авторы" [ref=e103] [cursor=pointer]:
+                - /url: /admin/blog/authors
+                - generic [ref=e104]: Авторы
+        - listitem [ref=e105]:
+          - link "Медиатека" [ref=e106] [cursor=pointer]:
+            - /url: /admin/media
+            - img [ref=e107]
+            - generic [ref=e112]: Медиатека
+        - listitem [ref=e113]:
+          - link "Настройки" [ref=e114] [cursor=pointer]:
+            - /url: /admin/settings
+            - img [ref=e115]
+            - generic [ref=e118]: Настройки
+        - listitem [ref=e119]:
+          - link "Юр. документы" [ref=e120] [cursor=pointer]:
+            - /url: /admin/legal
+            - img [ref=e121]
+            - generic [ref=e124]: Юр. документы
+        - listitem [ref=e125]:
+          - link "Аккаунт" [ref=e126] [cursor=pointer]:
+            - /url: /admin/account
+            - img [ref=e127]
+            - generic [ref=e139]: Аккаунт
+      - generic [ref=e141]:
+        - generic [ref=e142]:
+          - paragraph [ref=e143]: Dev Admin
+          - paragraph [ref=e144]: admin@local.test
+        - button "Выйти" [ref=e145]:
+          - img
+      - button "Toggle Sidebar" [ref=e146]
+    - main [ref=e147]:
+      - generic [ref=e148]:
+        - button "Показать или скрыть меню" [ref=e149]:
+          - img
+          - generic [ref=e150]: Toggle Sidebar
+        - link "Открыть сайт" [ref=e152] [cursor=pointer]:
+          - /url: /
+          - text: Открыть сайт
+          - img [ref=e153]
+      - generic [ref=e174]:
+        - generic [ref=e175]:
+          - navigation "breadcrumb" [ref=e176]:
+            - list [ref=e177]:
+              - listitem [ref=e178]:
+                - link "Заявки" [ref=e179] [cursor=pointer]:
+                  - /url: /admin/leads
+              - listitem [ref=e180]:
+                - img [ref=e181]
+              - listitem [ref=e183]:
+                - link "#33" [disabled] [ref=e184]
+          - generic [ref=e185]:
+            - generic [ref=e186]:
+              - link "Назад" [ref=e187] [cursor=pointer]:
+                - /url: /admin/leads
+                - img
+              - generic [ref=e188]:
+                - 'heading "Заявка #33" [level=1] [ref=e189]'
+                - paragraph [ref=e190]:
+                  - generic [ref=e191]:
+                    - time [ref=e192]: 20 нояб. 2026 г., 20:02
+                    - generic [ref=e193]: Обратный звонок
+                    - generic [ref=e194]: Новая
+            - link "Назад к списку" [ref=e196] [cursor=pointer]:
+              - /url: /admin/leads
+              - img
+              - text: Назад к списку
+        - generic [ref=e197]:
+          - generic [ref=e199]:
+            - heading "Контакты и запрос" [level=3] [ref=e201]
+            - generic [ref=e202]:
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - term [ref=e205]: Имя
+                  - definition [ref=e206]: Smoke Test
+                - generic [ref=e207]:
+                  - term [ref=e208]: Телефон
+                  - definition [ref=e209]:
+                    - link "+79990000000" [ref=e210] [cursor=pointer]:
+                      - /url: tel:+79990000000
+              - generic [ref=e211]:
+                - generic [ref=e212]:
+                  - term [ref=e213]: Форма
+                  - definition [ref=e214]: Smoke test
+                - generic [ref=e215]:
+                  - term [ref=e216]: Блок
+                  - definition [ref=e217]: SMOKE TEST
+                - generic [ref=e218]:
+                  - term [ref=e219]: Страница
+                  - definition [ref=e220]:
+                    - link "http://localhost:3000/" [ref=e221] [cursor=pointer]:
+                      - /url: http://localhost:3000/
+                - generic [ref=e222]:
+                  - term [ref=e223]: Согласие на обработку ПДн
+                  - definition [ref=e224]:
+                    - text: 20 нояб. 2026 г., 20:02,
+                    - link "версия 1" [ref=e225] [cursor=pointer]:
+                      - /url: /admin/legal/6b61c463-c887-496b-bbba-aedf9a866e77
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - heading "Обработка" [level=3] [ref=e229]
+              - generic [ref=e231]:
+                - generic [ref=e232]: Статус заявки
+                - combobox "Статус заявки" [ref=e234]:
+                  - generic: Новая
+                  - img
+            - generic [ref=e235]:
+              - generic [ref=e236]:
+                - heading "Уведомления" [level=3] [ref=e237]
+                - paragraph [ref=e238]: Email и Telegram администратору
+              - generic [ref=e239]:
+                - list [ref=e240]:
+                  - listitem [ref=e241]:
+                    - img [ref=e243]
+                    - generic [ref=e246]:
+                      - paragraph [ref=e247]: "Email: ошибка"
+                      - paragraph [ref=e265]: not_configured
+                      - paragraph [ref=e266]: 20 нояб. 2026 г., 20:03
+                  - listitem [ref=e248]:
+                    - img [ref=e250]
+                    - generic [ref=e253]:
+                      - paragraph [ref=e254]: "Telegram: ошибка"
+                      - paragraph [ref=e267]: not_configured
+                      - paragraph [ref=e268]: 20 нояб. 2026 г., 20:03
+                - button "Повторить уведомление" [ref=e255]:
+                  - img
+                  - text: Повторить уведомление
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e269]:
+        - img [ref=e271]
+        - generic [ref=e276]: "Email: ошибка (not_configured); Telegram: ошибка (not_configured)"
+  - button "Open Next.js Dev Tools" [ref=e170] [cursor=pointer]:
+    - img [ref=e171]
+  - alert [ref=e264]

@@ -1,4 +1,7 @@
+import { legacyRedirects } from "./src/lib/seo/legacy-redirects";
 import type { NextConfig } from "next";
+
+type RedirectRule = Awaited<ReturnType<NonNullable<NextConfig["redirects"]>>>[number];
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -64,6 +67,23 @@ const nextConfig: NextConfig = {
       { source: "/forgot-password", headers: noindex },
       { source: "/reset-password", headers: noindex },
     ];
+  },
+  async redirects() {
+    const rules: RedirectRule[] = [...legacyRedirects];
+    // www -> apex как вторая линия обороны (основной редирект — Traefik/Dokploy).
+    const site = process.env.NEXT_PUBLIC_SITE_URL;
+    if (site) {
+      const host = new URL(site).host;
+      if (!host.startsWith("www.") && !host.startsWith("localhost")) {
+        rules.push({
+          source: "/:path*",
+          has: [{ type: "host", value: `www.${host}` }],
+          destination: `${site.replace(/\/+$/, "")}/:path*`,
+          statusCode: 301,
+        });
+      }
+    }
+    return rules;
   },
 };
 

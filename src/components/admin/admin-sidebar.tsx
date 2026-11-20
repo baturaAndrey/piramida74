@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Banknote,
+  ConciergeBell,
   FileImage,
+  FileText,
   Images,
   Inbox,
   LayoutDashboard,
@@ -36,7 +38,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-type NavChild = { title: string; href: string };
+type NavChild = {
+  title: string;
+  href: string;
+  /** Точное совпадение — для подпункта, совпадающего с родительским разделом */
+  exact?: boolean;
+};
 type NavItem = {
   title: string;
   href: string;
@@ -50,9 +57,19 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { title: "Сводка", href: "/admin", icon: LayoutDashboard, exact: true },
   { title: "Заявки", href: "/admin/leads", icon: Inbox, badge: "leads" },
-  { title: "Турниры", href: "/admin/tournaments", icon: Trophy },
+  {
+    title: "Турниры",
+    href: "/admin/tournaments",
+    icon: Trophy,
+    children: [
+      // exact: иначе «Турниры» подсвечивались бы и на /admin/tournaments/series
+      { title: "Все турниры", href: "/admin/tournaments", exact: true },
+      { title: "Серии", href: "/admin/tournaments/series" },
+    ],
+  },
   { title: "Акции", href: "/admin/promotions", icon: Percent },
   { title: "Цены", href: "/admin/pricing", icon: Banknote },
+  { title: "Услуги", href: "/admin/services", icon: ConciergeBell },
   { title: "Меню", href: "/admin/menu", icon: UtensilsCrossed },
   { title: "Банкетные сеты", href: "/admin/banquet-sets", icon: PartyPopper },
   { title: "Галереи", href: "/admin/galleries", icon: Images },
@@ -69,6 +86,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { title: "Медиатека", href: "/admin/media", icon: FileImage },
   { title: "Настройки", href: "/admin/settings", icon: Settings },
+  { title: "Юр. документы", href: "/admin/legal", icon: FileText },
   { title: "Аккаунт", href: "/admin/account", icon: UserCog },
 ];
 
@@ -129,7 +147,7 @@ export function AdminSidebar({ leadsBadge, userMenu }: AdminSidebarProps) {
                     {item.children ? (
                       <SidebarMenuSub>
                         {item.children.map((child) => {
-                          const childActive = isActivePath(pathname, child.href);
+                          const childActive = isActivePath(pathname, child.href, child.exact);
                           return (
                             <SidebarMenuSubItem key={child.href}>
                               <SidebarMenuSubButton asChild isActive={childActive}>

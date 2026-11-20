@@ -1,0 +1,183 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e37]:
+    - generic [ref=e40]:
+      - link "Пирамида · админка" [ref=e42] [cursor=pointer]:
+        - /url: /admin
+      - list [ref=e46]:
+        - listitem [ref=e47]:
+          - link "Сводка" [ref=e48] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=e49]
+            - generic [ref=e54]: Сводка
+        - listitem [ref=e55]:
+          - link "Заявки" [ref=e56] [cursor=pointer]:
+            - /url: /admin/leads
+            - img [ref=e57]
+            - generic [ref=e60]: Заявки
+          - generic:
+            - 'generic "Новых заявок: 1"': "1"
+        - listitem [ref=e61]:
+          - link "Турниры" [ref=e62] [cursor=pointer]:
+            - /url: /admin/tournaments
+            - img [ref=e63]
+            - generic [ref=e69]: Турниры
+          - list [ref=e70]:
+            - listitem [ref=e71]:
+              - link "Все турниры" [ref=e72] [cursor=pointer]:
+                - /url: /admin/tournaments
+                - generic [ref=e73]: Все турниры
+            - listitem [ref=e74]:
+              - link "Серии" [ref=e75] [cursor=pointer]:
+                - /url: /admin/tournaments/series
+                - generic [ref=e76]: Серии
+        - listitem [ref=e77]:
+          - link "Акции" [ref=e78] [cursor=pointer]:
+            - /url: /admin/promotions
+            - img [ref=e79]
+            - generic [ref=e83]: Акции
+        - listitem [ref=e84]:
+          - link "Цены" [ref=e85] [cursor=pointer]:
+            - /url: /admin/pricing
+            - img [ref=e86]
+            - generic [ref=e89]: Цены
+        - listitem [ref=e90]:
+          - link "Услуги" [ref=e91] [cursor=pointer]:
+            - /url: /admin/services
+            - img [ref=e92]
+            - generic [ref=e95]: Услуги
+        - listitem [ref=e96]:
+          - link "Меню" [ref=e97] [cursor=pointer]:
+            - /url: /admin/menu
+            - img [ref=e98]
+            - generic [ref=e103]: Меню
+        - listitem [ref=e104]:
+          - link "Банкетные сеты" [ref=e105] [cursor=pointer]:
+            - /url: /admin/banquet-sets
+            - img [ref=e106]
+            - generic [ref=e112]: Банкетные сеты
+        - listitem [ref=e113]:
+          - link "Галереи" [ref=e114] [cursor=pointer]:
+            - /url: /admin/galleries
+            - img [ref=e115]
+            - generic [ref=e120]: Галереи
+        - listitem [ref=e121]:
+          - link "Блог" [ref=e122] [cursor=pointer]:
+            - /url: /admin/blog
+            - img [ref=e123]
+            - generic [ref=e126]: Блог
+          - list [ref=e127]:
+            - listitem [ref=e128]:
+              - link "Статьи" [ref=e129] [cursor=pointer]:
+                - /url: /admin/blog/articles
+                - generic [ref=e130]: Статьи
+            - listitem [ref=e131]:
+              - link "Рубрики" [ref=e132] [cursor=pointer]:
+                - /url: /admin/blog/rubrics
+                - generic [ref=e133]: Рубрики
+            - listitem [ref=e134]:
+              - link "Теги" [ref=e135] [cursor=pointer]:
+                - /url: /admin/blog/tags
+                - generic [ref=e136]: Теги
+            - listitem [ref=e137]:
+              - link "Авторы" [ref=e138] [cursor=pointer]:
+                - /url: /admin/blog/authors
+                - generic [ref=e139]: Авторы
+        - listitem [ref=e140]:
+          - link "Медиатека" [ref=e141] [cursor=pointer]:
+            - /url: /admin/media
+            - img [ref=e142]
+            - generic [ref=e147]: Медиатека
+        - listitem [ref=e148]:
+          - link "Настройки" [ref=e149] [cursor=pointer]:
+            - /url: /admin/settings
+            - img [ref=e150]
+            - generic [ref=e153]: Настройки
+        - listitem [ref=e154]:
+          - link "Юр. документы" [ref=e155] [cursor=pointer]:
+            - /url: /admin/legal
+            - img [ref=e156]
+            - generic [ref=e159]: Юр. документы
+        - listitem [ref=e160]:
+          - link "Аккаунт" [ref=e161] [cursor=pointer]:
+            - /url: /admin/account
+            - img [ref=e162]
+            - generic [ref=e174]: Аккаунт
+      - generic [ref=e176]:
+        - generic [ref=e177]:
+          - paragraph [ref=e178]: Dev Admin
+          - paragraph [ref=e179]: admin@local.test
+        - button "Выйти" [ref=e180]:
+          - img
+      - button "Toggle Sidebar" [ref=e181]
+    - main [ref=e182]:
+      - generic [ref=e183]:
+        - button "Показать или скрыть меню" [ref=e184]:
+          - img
+          - generic [ref=e185]: Toggle Sidebar
+        - link "Открыть сайт" [ref=e187] [cursor=pointer]:
+          - /url: /
+          - text: Открыть сайт
+          - img [ref=e188]
+      - generic [ref=e193]:
+        - generic [ref=e195]:
+          - generic [ref=e197]:
+            - heading "Сводка" [level=1] [ref=e198]
+            - paragraph [ref=e199]: Новые заявки и ближайшие турниры
+          - generic [ref=e200]:
+            - link "Добавить турнир" [ref=e201] [cursor=pointer]:
+              - /url: /admin/tournaments/new
+              - img
+              - text: Добавить турнир
+            - link "Редактировать цены" [ref=e202] [cursor=pointer]:
+              - /url: /admin/pricing
+              - img
+              - text: Редактировать цены
+            - link "Открыть сайт" [ref=e203] [cursor=pointer]:
+              - /url: /
+              - img
+              - text: Открыть сайт
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - heading "Новые заявки 1" [level=3] [ref=e207]:
+                - text: Новые заявки
+                - generic [ref=e208]: "1"
+              - paragraph [ref=e209]: Последние 10 необработанных заявок
+            - generic [ref=e210]:
+              - list [ref=e211]:
+                - listitem [ref=e212]:
+                  - link "#33 · Обратный звонок Smoke Test, +79990000000 20.11.2026, 20:02" [ref=e213] [cursor=pointer]:
+                    - /url: /admin/leads/70c1de7b-803c-42ed-bce5-56da3ef9c4e7
+                    - generic [ref=e214]:
+                      - paragraph [ref=e215]: "#33 · Обратный звонок"
+                      - paragraph [ref=e216]: Smoke Test, +79990000000
+                    - time [ref=e217]: 20.11.2026, 20:02
+              - link "Все заявки" [ref=e218] [cursor=pointer]:
+                - /url: /admin/leads
+          - generic [ref=e219]:
+            - generic [ref=e220]:
+              - heading "Ближайшие турниры" [level=3] [ref=e221]
+              - paragraph [ref=e222]: Опубликованные, ещё не завершившиеся
+            - generic [ref=e223]:
+              - list [ref=e224]:
+                - listitem [ref=e225]:
+                  - link "Марафон-Промнефтегаз, 11 тур (свободная пирамида) 28–29 ноября" [ref=e226] [cursor=pointer]:
+                    - /url: /admin/tournaments/c161a95e-e5a5-4914-a117-8deea51fd4cd
+                    - generic [ref=e227]: Марафон-Промнефтегаз, 11 тур (свободная пирамида)
+                    - generic [ref=e228]: 28–29 ноября
+                - listitem [ref=e229]:
+                  - link "Сеньоры Челябинска, 8 тур 12–13 декабря" [ref=e230] [cursor=pointer]:
+                    - /url: /admin/tournaments/3f3ea580-c3ee-44f2-ac36-976d29f6e0dc
+                    - generic [ref=e231]: Сеньоры Челябинска, 8 тур
+                    - generic [ref=e232]: 12–13 декабря
+                - listitem [ref=e233]:
+                  - link "Марафон-Промнефтегаз, 12 тур (свободная пирамида) 26–27 декабря" [ref=e234] [cursor=pointer]:
+                    - /url: /admin/tournaments/23441e47-4cee-49fb-9eba-f0a7c36b0826
+                    - generic [ref=e235]: Марафон-Промнефтегаз, 12 тур (свободная пирамида)
+                    - generic [ref=e236]: 26–27 декабря
+              - link "Все турниры" [ref=e237] [cursor=pointer]:
+                - /url: /admin/tournaments
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e32] [cursor=pointer]:
+    - img [ref=e33]
+  - alert [ref=e36]: Сводка

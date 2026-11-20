@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import {
   closestCenter,
   DndContext,
@@ -123,6 +123,9 @@ export function SortableList<T extends { id: string }>({
   const [orderIds, setOrderIds] = useState(() => items.map((item) => item.id));
   const [syncedKey, setSyncedKey] = useState(() => idsKey(items));
   const [saving, setSaving] = useState(false);
+  // Без явного id dnd-kit генерирует aria-describedby из глобального счётчика,
+  // который расходится между SSR и клиентом → hydration mismatch. useId стабилен.
+  const dndContextId = useId();
 
   const incomingKey = idsKey(items);
   if (incomingKey !== syncedKey) {
@@ -172,7 +175,9 @@ export function SortableList<T extends { id: string }>({
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      id={dndContextId}
+      sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
         items={ordered.map((item) => item.id)}
         strategy={verticalListSortingStrategy}
