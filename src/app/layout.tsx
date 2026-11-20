@@ -1,8 +1,8 @@
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 
@@ -81,7 +81,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <script
           type="application/ld+json"
@@ -91,17 +91,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SiteHeader />
-          <main id="main-content" className="flex-1">{children}</main>
-          <SiteFooter />
-          <Toaster richColors position="top-right" />
-        </ThemeProvider>
+        <SiteHeader />
+        <main id="main-content" className="flex-1">
+          {/* Cache Components: starter auth pages read headers() — needs a Suspense boundary (task 02 rewrites this file) */}
+          <Suspense fallback={null}>{children}</Suspense>
+        </main>
+        <SiteFooter />
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

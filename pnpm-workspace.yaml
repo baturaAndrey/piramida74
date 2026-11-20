@@ -1,4 +1,7 @@
+overrides:
+  "@types/react": 19.3.0
+  "@types/react-dom": 19.3.0
 allowBuilds:
-  esbuild: set this to true or false
-  msw: set this to true or false
-  sharp: set this to true or false
+  esbuild: true
+  sharp: true
+  msw: false

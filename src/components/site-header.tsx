@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Bot } from "lucide-react";
 import { UserProfile } from "@/components/auth/user-profile";
-import { ModeToggle } from "./ui/mode-toggle";
 
 export function SiteHeader() {
   return (
@@ -37,7 +36,6 @@ export function SiteHeader() {
           </h1>
           <div className="flex items-center gap-2 sm:gap-4" role="group" aria-label="User actions">
             <UserProfile />
-            <ModeToggle />
           </div>
         </nav>
       </header>

@@ -112,7 +112,7 @@ graph TD
 ## Task Status
 
 ### Wave 1
-- [ ] [task-01-starter-cleanup-deps](./tasks/task-01-starter-cleanup-deps.md) — Чистка стартера, пакеты, shadcn, конфиги, тестовый тулинг
+- [x] [task-01-starter-cleanup-deps](./tasks/task-01-starter-cleanup-deps.md) — Чистка стартера, пакеты, shadcn, конфиги, тестовый тулинг
 
 ### Wave 2
 - [ ] [task-02-design-tokens-layout](./tasks/task-02-design-tokens-layout.md) — Токены Tailwind, Onest, DESIGN.md, root layout, фавиконы

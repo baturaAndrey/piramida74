@@ -92,7 +92,7 @@ OPENROUTER_MODEL="openai/gpt-5-mini"
 OPENAI_EMBEDDING_MODEL="text-embedding-3-large"
 
 # App URL
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 
 # File storage
 BLOB_READ_WRITE_TOKEN=
@@ -335,7 +335,7 @@ Set the required production environment variables:
 
 - `POSTGRES_URL`
 - `BETTER_AUTH_SECRET`
-- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_SITE_URL`
 - `OPENROUTER_API_KEY`, if using AI features
 - `OPENROUTER_MODEL`, if using AI features
 - `BLOB_READ_WRITE_TOKEN`, if using Vercel Blob
