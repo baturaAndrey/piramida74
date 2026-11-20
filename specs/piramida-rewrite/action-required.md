@@ -2,6 +2,8 @@
 
 Шаги, которые выполняет человек. Агенты их сделать не могут.
 
+> **Деплой:** пошаговый runbook (Dokploy, env, Traefik, первый запуск seed/seed-admin/импорт фото, cron, бэкапы) — в [`README.md`](../../README.md#деплой-в-dokploy).
+
 ## Срочно (безопасность, независимо от разработки)
 
 - [ ] **Перевыпустить токен Telegram-бота** через @BotFather. Старый токен лежит в `send/sendTg.php` и в архиве `74.zip`.
@@ -24,17 +26,18 @@
 
 - [ ] **Создать `.env` локально** по `env.example`: `POSTGRES_URL`, `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `BETTER_AUTH_URL`, `NEXT_PUBLIC_SITE_URL`, `UPLOAD_DIR`, `SMTP_*`, `LEADS_EMAIL_TO`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `NEXT_PUBLIC_YM_ID=106365667`. Нужно для задач 08, 07, 11.
 - [ ] **Запустить локальный Postgres** (`docker compose up -d`) перед задачей 03. На нём выполняются `db:migrate`, seed и e2e-тесты.
-- [ ] **Создать первого админа**: `pnpm tsx scripts/seed-admin.ts --email ... --password ...` после задачи 08.
+- [ ] **Создать первого админа**: `SEED_ADMIN_PASSWORD='…' pnpm seed:admin --email ...` после задачи 08 (в проде — `node scripts-dist/seed-admin.mjs`, см. README).
 - [ ] **Дать фото лучшего качества и мобильный вариант hero**, если они есть. Нужно для задачи 15.
 
 ## After Implementation
 
-- [ ] **Dokploy:**
+- [ ] **Dokploy** (подробно — README, раздел «Деплой в Dokploy»):
   - создать сервис Postgres 18;
   - создать Application из Git-репозитория (Dockerfile), replicas = 1;
   - создать volume `piramida-uploads` → `/data/uploads`;
   - задать env-переменные (`NEXT_PUBLIC_*` передать как build args);
-  - настроить Health Check на `/api/health`.
+  - настроить Health Check на `/api/health`;
+  - после первого деплоя выполнить в контейнере `node scripts-dist/seed.mjs`, `node scripts-dist/seed-admin.mjs` и (по желанию) импорт фото — команды в README, «Первый деплой». Без seed нет опубликованного согласия и форма не принимает заявки.
 - [ ] **Traefik:** настроить trusted IPs, чтобы `X-Real-IP` и `X-Forwarded-For` перезаписывались. Без этого обходится rate limit.
 - [ ] **Бэкапы Dokploy:**
   - destination — S3 в РФ (Yandex Object Storage или Selectel);

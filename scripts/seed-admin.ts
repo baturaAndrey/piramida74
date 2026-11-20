@@ -4,6 +4,9 @@
  *   SEED_ADMIN_PASSWORD='…' pnpm seed:admin --email admin@example.ru --name "Иван"
  *   pnpm seed:admin --email admin@example.ru --reset-password   # сменить пароль существующему
  *
+ * В Docker-образе: `node scripts-dist/seed-admin.mjs` (email и пароль — из SEED_ADMIN_EMAIL /
+ * SEED_ADMIN_PASSWORD или аргументов; аргументы важнее переменных).
+ *
  * Идемпотентен: повторный запуск подтверждает роль admin и снимает бан, но пароль меняет
  * только с флагом --reset-password. Не импортирует src/lib/auth.ts (не тянет notify/env),
  * работает напрямую с БД и hashPassword из Better Auth.
@@ -37,8 +40,8 @@ function readOptions() {
   })
 
   // Better Auth хранит и сравнивает email в нижнем регистре
-  const email = values.email?.trim().toLowerCase()
-  if (!email) fail("Укажите --email")
+  const email = (values.email ?? process.env.SEED_ADMIN_EMAIL)?.trim().toLowerCase()
+  if (!email) fail("Укажите email: --email или переменная SEED_ADMIN_EMAIL")
   if (!EMAIL_RE.test(email)) fail(`Некорректный email: ${email}`)
 
   const password = values.password ?? process.env.SEED_ADMIN_PASSWORD

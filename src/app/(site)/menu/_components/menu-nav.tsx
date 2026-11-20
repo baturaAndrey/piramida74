@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type MouseEvent } from "react";
 import { cn } from "@/lib/utils";
 
 export type MenuNavEntry = {
@@ -10,27 +10,33 @@ export type MenuNavEntry = {
 };
 
 type MenuNavProps = {
+  /** Только разделы верхнего уровня; подкатегории — в `children` */
   entries: MenuNavEntry[];
-  /** slug активного раздела (scroll-spy) или `null` */
+  /** slug активного раздела или подкатегории (scroll-spy / клик) либо `null` */
   activeSlug: string | null;
+  /** slug раскрытого в навигации раздела верхнего уровня: под ним видны подкатегории */
+  expandedSlug: string | null;
+  /** Переход к разделу: раскрыть его в каталоге и прокрутить к якорю */
+  onNavigate: (slug: string) => void;
   /** `sidebar` — вертикальный список на `lg+`; `chips` — строка чипов на мобильном */
   variant: "sidebar" | "chips";
   className?: string;
 };
 
+type LinkState = "active" | "parent" | "idle";
+
 const LINK_BASE =
   "block rounded-[12px] px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-ring/50 focus-visible:ring-[3px]";
 
-function linkClass(active: boolean, extra?: string) {
-  return cn(
-    LINK_BASE,
-    active ? "bg-primary text-white" : "bg-white text-[#8E8E8E] hover:text-foreground",
-    extra
-  );
-}
+const LINK_STATE: Record<LinkState, string> = {
+  active: "bg-primary text-white",
+  // Раздел, внутри которого активна подкатегория
+  parent: "bg-accent text-accent-foreground",
+  idle: "bg-white text-[#8E8E8E] hover:text-foreground",
+};
 
 /**
- * Прокручивает только контейнер навигации (не окно), чтобы активный пункт был виден.
+ * Прокручивает только контейнер навигации (не окно), чтобы пункт был виден.
  * `scrollIntoView` здесь не подходит: он двигает и страницу, мешая пользователю скроллить.
  */
 function revealInContainer(container: HTMLElement, el: HTMLElement, axis: "x" | "y") {
@@ -47,49 +53,116 @@ function revealInContainer(container: HTMLElement, el: HTMLElement, axis: "x" | 
   }
 }
 
-/** Навигация по разделам меню: якоря `#cat-{slug}`, подсветка активного раздела */
-export function MenuNav({ entries, activeSlug, variant, className }: MenuNavProps) {
+/** Скрытый вариант навигации (display: none) не имеет размеров — прокручивать нечего */
+function isRendered(el: HTMLElement) {
+  return el.offsetParent !== null || getComputedStyle(el).position === "fixed";
+}
+
+function revealSlug(container: HTMLElement | null, slug: string | null, axis: "x" | "y") {
+  if (!container || !slug || !isRendered(container)) return;
+  const el = container.querySelector<HTMLElement>(`[data-slug="${CSS.escape(slug)}"]`);
+  if (el) revealInContainer(container, el, axis);
+}
+
+type NavLinkProps = {
+  slug: string;
+  title: string;
+  state: LinkState;
+  onNavigate: (slug: string) => void;
+  className?: string;
+};
+
+function NavLink({ slug, title, state, onNavigate, className }: NavLinkProps) {
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    // Открытие в новой вкладке и т. п. оставляем браузеру
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    // Свёрнутый раздел скрыт, нативный переход по якорю не сработает — раскрываем сами
+    event.preventDefault();
+    onNavigate(slug);
+  };
+
+  return (
+    <a
+      href={`#cat-${slug}`}
+      data-slug={slug}
+      aria-current={state === "active" ? "true" : undefined}
+      onClick={handleClick}
+      className={cn(LINK_BASE, LINK_STATE[state], className)}
+    >
+      {title}
+    </a>
+  );
+}
+
+/**
+ * Навигация по меню: только разделы верхнего уровня, подкатегории — у раскрытого раздела.
+ * Якоря `#cat-{slug}` сохраняются в `href` (работают без JS и при копировании ссылки).
+ */
+export function MenuNav({
+  entries,
+  activeSlug,
+  expandedSlug,
+  onNavigate,
+  variant,
+  className,
+}: MenuNavProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const childrenRowRef = useRef<HTMLDivElement>(null);
+  const expanded = entries.find((entry) => entry.slug === expandedSlug) ?? null;
+
+  const rootState = (slug: string): LinkState => {
+    if (slug === activeSlug) return "active";
+    return slug === expandedSlug && activeSlug !== null ? "parent" : "idle";
+  };
+  const childState = (slug: string): LinkState => (slug === activeSlug ? "active" : "idle");
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container || !activeSlug) return;
-    // Скрытый вариант (display: none) не имеет размеров — пропускаем
-    if (container.offsetParent === null && getComputedStyle(container).position !== "fixed") return;
-    const el = container.querySelector<HTMLElement>(`[data-slug="${CSS.escape(activeSlug)}"]`);
-    if (el) revealInContainer(container, el, variant === "chips" ? "x" : "y");
-  }, [activeSlug, variant]);
+    if (variant === "chips") {
+      revealSlug(containerRef.current, expandedSlug, "x");
+      revealSlug(childrenRowRef.current, activeSlug, "x");
+    } else {
+      revealSlug(containerRef.current, activeSlug, "y");
+    }
+  }, [activeSlug, expandedSlug, variant]);
 
   if (variant === "chips") {
+    const rowClass =
+      "relative flex [scrollbar-width:none] gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden";
     return (
       <nav aria-label="Разделы меню" className={className}>
-        <div
-          ref={containerRef}
-          className="relative flex [scrollbar-width:none] gap-2 overflow-x-auto py-3 [&::-webkit-scrollbar]:hidden"
-        >
-          {entries.flatMap((entry) => [
-            <a
+        <div ref={containerRef} className={cn(rowClass, "py-3")}>
+          {entries.map((entry) => (
+            <NavLink
               key={entry.slug}
-              href={`#cat-${entry.slug}`}
-              data-slug={entry.slug}
-              aria-current={activeSlug === entry.slug ? "true" : undefined}
-              className={linkClass(activeSlug === entry.slug, "shrink-0 whitespace-nowrap")}
-            >
-              {entry.title}
-            </a>,
-            ...entry.children.map((child) => (
-              <a
-                key={child.slug}
-                href={`#cat-${child.slug}`}
-                data-slug={child.slug}
-                aria-current={activeSlug === child.slug ? "true" : undefined}
-                className={linkClass(activeSlug === child.slug, "shrink-0 whitespace-nowrap")}
-              >
-                {child.title}
-              </a>
-            )),
-          ])}
+              slug={entry.slug}
+              title={entry.title}
+              state={rootState(entry.slug)}
+              onNavigate={onNavigate}
+              className="shrink-0 whitespace-nowrap"
+            />
+          ))}
         </div>
+        {expanded && expanded.children.length > 0 ? (
+          <div
+            ref={childrenRowRef}
+            aria-label={`Подразделы: ${expanded.title}`}
+            role="group"
+            className={cn(rowClass, "-mt-1 pb-3")}
+          >
+            {expanded.children.map((child) => (
+              <NavLink
+                key={child.slug}
+                slug={child.slug}
+                title={child.title}
+                state={childState(child.slug)}
+                onNavigate={onNavigate}
+                className="shrink-0 px-2.5 py-1.5 text-xs whitespace-nowrap"
+              />
+            ))}
+          </div>
+        ) : null}
       </nav>
     );
   }
@@ -103,26 +176,22 @@ export function MenuNav({ entries, activeSlug, variant, className }: MenuNavProp
         <ul className="space-y-1.5">
           {entries.map((entry) => (
             <li key={entry.slug}>
-              <a
-                href={`#cat-${entry.slug}`}
-                data-slug={entry.slug}
-                aria-current={activeSlug === entry.slug ? "true" : undefined}
-                className={linkClass(activeSlug === entry.slug)}
-              >
-                {entry.title}
-              </a>
-              {entry.children.length > 0 ? (
+              <NavLink
+                slug={entry.slug}
+                title={entry.title}
+                state={rootState(entry.slug)}
+                onNavigate={onNavigate}
+              />
+              {entry.slug === expandedSlug && entry.children.length > 0 ? (
                 <ul className="mt-1.5 space-y-1.5 pl-4">
                   {entry.children.map((child) => (
                     <li key={child.slug}>
-                      <a
-                        href={`#cat-${child.slug}`}
-                        data-slug={child.slug}
-                        aria-current={activeSlug === child.slug ? "true" : undefined}
-                        className={linkClass(activeSlug === child.slug)}
-                      >
-                        {child.title}
-                      </a>
+                      <NavLink
+                        slug={child.slug}
+                        title={child.title}
+                        state={childState(child.slug)}
+                        onNavigate={onNavigate}
+                      />
                     </li>
                   ))}
                 </ul>

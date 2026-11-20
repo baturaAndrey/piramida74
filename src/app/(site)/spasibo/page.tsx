@@ -1,5 +1,9 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { connection } from "next/server";
+import { Picture } from "@/components/media/picture";
 import { Button } from "@/components/ui/button";
+import { getGallery } from "@/lib/queries/galleries";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -9,12 +13,34 @@ export const metadata: Metadata = {
 
 const DOT_DELAYS = ["0s", ".3s", ".6s"] as const;
 
-// TODO(after Wave 3): фото из галереи `hero` поверх градиента — async-компонент в <Suspense fallback={null}>
-// с `await connection()` + getGallery("hero") (задача 12) и <Picture priority> (задача 09).
+/** Фото из галереи `hero` поверх градиента; пока фото нет (или оно грузится) — виден градиент. */
+async function HeroBackground() {
+  await connection();
+  const gallery = await getGallery("hero");
+  const items = gallery?.items ?? [];
+  const item = items.find((i) => i.variant === "default") ?? items[0];
+  if (!item) return null;
+  return (
+    <Picture
+      asset={item.media}
+      sizes="(min-width:1920px) 1882px, 100vw"
+      alt=""
+      priority
+      pictureClassName="absolute inset-0"
+      className="absolute inset-0 size-full object-cover opacity-40"
+    />
+  );
+}
+
 export default function ThankYouPage() {
   return (
     <div className="container-frame py-4">
       <section className="from-primary-dark to-primary rounded-hero relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-gradient-to-br px-6 py-16 text-center">
+        <div className="absolute inset-0" aria-hidden="true">
+          <Suspense fallback={null}>
+            <HeroBackground />
+          </Suspense>
+        </div>
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-8">
           <h1 className="text-h1 font-semibold text-white">
             <strong className="font-semibold">Спасибо за обращение</strong> в Бильярдный клуб

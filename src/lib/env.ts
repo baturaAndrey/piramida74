@@ -10,13 +10,22 @@ const optionalPort = z.preprocess(
   z.coerce.number().int().positive().optional()
 );
 
+/**
+ * Каталог загрузок по умолчанию: в проде — Docker volume, в dev — папка в проекте.
+ * Единый источник для схемы env и для `getUploadDir()` (media/storage), который читает
+ * `process.env` напрямую, потому что запускается и вне Next (скрипты импорта).
+ */
+export function defaultUploadDir(): string {
+  return process.env.NODE_ENV === "production" ? "/data/uploads" : "./.data/uploads";
+}
+
 const serverEnvSchema = z.object({
   POSTGRES_URL: z.string().min(1, "POSTGRES_URL is required"),
   BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
   UPLOAD_DIR: z.preprocess(
     (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-    z.string().default(process.env.NODE_ENV === "production" ? "/data/uploads" : "./.data/uploads")
+    z.string().default(defaultUploadDir())
   ),
   // Необязательные: если не заданы, уведомление пропускается + console.warn
   SMTP_HOST: optionalString,
@@ -46,7 +55,10 @@ export function getServerEnv(): ServerEnv {
   if (serverEnvCache) return serverEnvCache;
   const parsed = serverEnvSchema.safeParse(process.env);
   if (!parsed.success) {
-    console.error("Invalid server environment variables:", z.flattenError(parsed.error).fieldErrors);
+    console.error(
+      "Invalid server environment variables:",
+      z.flattenError(parsed.error).fieldErrors
+    );
     throw new Error("Invalid server environment variables");
   }
   serverEnvCache = parsed.data;
@@ -60,14 +72,23 @@ export function getClientEnv(): ClientEnv {
     NEXT_PUBLIC_YM_ID: process.env.NEXT_PUBLIC_YM_ID,
   });
   if (!parsed.success) {
-    console.error("Invalid client environment variables:", z.flattenError(parsed.error).fieldErrors);
+    console.error(
+      "Invalid client environment variables:",
+      z.flattenError(parsed.error).fieldErrors
+    );
     throw new Error("Invalid client environment variables");
   }
   return parsed.data;
 }
 
-/** Предупреждения про необязательные переменные (только в dev). */
+/**
+ * Проверка окружения при старте сервера (вызывается из `src/instrumentation.ts`).
+ * Обязательные переменные валидируются сразу — ошибка конфигурации всплывает при деплое,
+ * а не на первом запросе; про необязательные каналы уведомлений только предупреждаем.
+ */
 export function checkEnv(): void {
+  getServerEnv();
+
   const warnings: string[] = [];
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     warnings.push("SMTP не настроен: email-уведомления о заявках будут пропущены.");
@@ -78,7 +99,7 @@ export function checkEnv(): void {
   if (!process.env.CRON_SECRET) {
     warnings.push("CRON_SECRET не задан: cron-маршруты будут отвечать 401.");
   }
-  if (process.env.NODE_ENV === "development" && warnings.length > 0) {
+  if (warnings.length > 0) {
     console.warn("Environment warnings:");
     warnings.forEach((w) => console.warn(`  - ${w}`));
   }

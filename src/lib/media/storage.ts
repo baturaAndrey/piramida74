@@ -2,10 +2,18 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, type SQL } from "drizzle-orm";
 import type { DbOrTx } from "@/lib/admin/audit";
 import { db } from "@/lib/db";
-import { articles, mediaAssets, promotions, type MediaAsset } from "@/lib/schema";
+import { defaultUploadDir } from "@/lib/env";
+import {
+  articles,
+  authors,
+  legalDocuments,
+  mediaAssets,
+  promotions,
+  type MediaAsset,
+} from "@/lib/schema";
 import { processImage } from "./process";
 import {
   assertFolder,
@@ -14,6 +22,7 @@ import {
   MediaValidationError,
   sanitizeOriginalName,
 } from "./validate";
+import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 
 export type MediaUsage = { entity: string; label: string; count: number };
 
@@ -64,9 +73,7 @@ const TABLE_LABELS: Record<string, string> = {
 };
 
 export function getUploadDir(): string {
-  const dir =
-    process.env.UPLOAD_DIR ||
-    (process.env.NODE_ENV === "production" ? "/data/uploads" : "./.data/uploads");
+  const dir = process.env.UPLOAD_DIR || defaultUploadDir();
   // turbopackIgnore: каталог задаётся в рантайме — без пометки Turbopack трассирует
   // весь проект в standalone-сборку маршрута /media
   return path.resolve(/*turbopackIgnore: true*/ dir);
@@ -250,38 +257,71 @@ function markdownUsage(
   };
 }
 
+/** Markdown-поля, куда админка может вставить ссылку `/media/<path>`. */
+type MarkdownSource = {
+  entity: string;
+  prefix: string;
+  table: PgTable;
+  /** Чем подписать найденную строку в описании использования */
+  label: AnyPgColumn | SQL<string>;
+  body: AnyPgColumn;
+};
+
+const MARKDOWN_SOURCES: MarkdownSource[] = [
+  {
+    entity: "articles",
+    prefix: "Текст статей",
+    table: articles,
+    label: articles.title,
+    body: articles.body,
+  },
+  {
+    entity: "promotions",
+    prefix: "Описание акций",
+    table: promotions,
+    label: promotions.title,
+    body: promotions.description,
+  },
+  {
+    entity: "authors",
+    prefix: "Биография авторов",
+    table: authors,
+    label: authors.name,
+    body: authors.bio,
+  },
+  {
+    entity: "legal_documents",
+    prefix: "Юридические документы",
+    table: legalDocuments,
+    label: sql<string>`${legalDocuments.title} || ' (' || ${legalDocuments.version} || ')'`,
+    body: legalDocuments.body,
+  },
+];
+
 async function findMarkdownUsages(assetPath: string, executor: DbOrTx): Promise<MediaUsage[]> {
   const pattern = `%${escapeLike(`/media/${assetPath}`)}%`;
 
-  const [articleRows, articleCount, promoRows, promoCount] = await Promise.all([
-    executor
-      .select({ title: articles.title })
-      .from(articles)
-      .where(sql`${articles.body} ILIKE ${pattern}`)
-      .limit(MARKDOWN_USAGE_LABEL_LIMIT),
-    executor.$count(articles, sql`${articles.body} ILIKE ${pattern}`),
-    executor
-      .select({ title: promotions.title })
-      .from(promotions)
-      .where(sql`${promotions.description} ILIKE ${pattern}`)
-      .limit(MARKDOWN_USAGE_LABEL_LIMIT),
-    executor.$count(promotions, sql`${promotions.description} ILIKE ${pattern}`),
-  ]);
+  const usages = await Promise.all(
+    MARKDOWN_SOURCES.map(async (source) => {
+      const where = sql`${source.body} ILIKE ${pattern}`;
+      const [rows, total] = await Promise.all([
+        executor
+          .select({ title: source.label })
+          .from(source.table)
+          .where(where)
+          .limit(MARKDOWN_USAGE_LABEL_LIMIT),
+        executor.$count(source.table, where),
+      ]);
+      return markdownUsage(
+        source.entity,
+        source.prefix,
+        rows.map((r) => String(r.title)),
+        total
+      );
+    })
+  );
 
-  return [
-    markdownUsage(
-      "articles",
-      "Текст статей",
-      articleRows.map((r) => r.title),
-      articleCount
-    ),
-    markdownUsage(
-      "promotions",
-      "Описание акций",
-      promoRows.map((r) => r.title),
-      promoCount
-    ),
-  ].filter((u): u is MediaUsage => u !== null);
+  return usages.filter((u): u is MediaUsage => u !== null);
 }
 
 /**

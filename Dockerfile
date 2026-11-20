@@ -31,7 +31,7 @@ ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
 RUN BETTER_AUTH_SECRET=build-only-secret-build-only-secret-0000 \
     BETTER_AUTH_URL=http://localhost:3000 \
     pnpm build \
- && pnpm build:migrate
+ && pnpm build:migrate  && pnpm build:scripts
 
 # ---------- runner ----------
 FROM node:${NODE_VERSION}-alpine AS runner
@@ -53,6 +53,8 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder --chown=node:node /app/drizzle ./drizzle
 COPY --from=builder --chown=node:node /app/dist/migrate.cjs ./migrate.cjs
+# Служебные скрипты первого деплоя (seed, seed-admin, импорт фото): `node scripts-dist/<имя>.mjs`
+COPY --from=builder --chown=node:node /app/dist/scripts ./scripts-dist
 COPY --chown=node:node --chmod=0755 docker-entrypoint.sh ./docker-entrypoint.sh
 RUN sed -i 's/\r$//' ./docker-entrypoint.sh
 

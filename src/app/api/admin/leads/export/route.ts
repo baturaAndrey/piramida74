@@ -1,5 +1,5 @@
 import { desc } from "drizzle-orm";
-import { buildLeadsWhere } from "@/app/(admin)/admin/leads/_lib/filters";
+import { buildLeadsWhere, firstParam } from "@/app/(admin)/admin/leads/_lib/filters";
 import {
   CALLBACK_WINDOW_LABELS,
   formatCsvDate,
@@ -100,8 +100,18 @@ export async function GET(req: Request): Promise<Response> {
   // Разделитель «;», BOM и CRLF — чтобы Excel (ru) открывал файл без мастера импорта
   const csv = [HEADER.map(csvCell).join(SEPARATOR), ...rows.map(toCsvRow)].join(LINE_BREAK);
 
-  // Аудит вне транзакции: выгрузка ничего не меняет
-  await audit(session.user.id, "leads.export", "leads", "csv", { count: rows.length, params });
+  // Аудит вне транзакции: выгрузка ничего не меняет. Строку поиска `q` (имя/телефон — ПДн)
+  // в журнал не пишем: только факт её наличия.
+  await audit(session.user.id, "leads.export", "leads", "csv", {
+    count: rows.length,
+    params: {
+      status: firstParam(params, "status") ?? null,
+      type: firstParam(params, "type") ?? null,
+      from: firstParam(params, "from") ?? null,
+      to: firstParam(params, "to") ?? null,
+      hasQuery: Boolean(firstParam(params, "q")?.trim()),
+    },
+  });
 
   return new Response(BOM + csv + LINE_BREAK, {
     headers: {

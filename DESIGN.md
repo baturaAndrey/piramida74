@@ -135,7 +135,7 @@
 - Публичный сайт `src/app/(site)/layout.tsx` (задача 13): `Header` (закреплённая, `bg-nav` при прокрутке) + `<main id="main-content" className="flex-1">` + `Footer` (`bg-footer`, 13 px) + CookieBanner + Метрика
 - Админка `src/app/(admin)/admin/layout.tsx` (задача 14), отдельный layout со своим `<main>`: `SidebarProvider` + `AppSidebar` + контент `p-4 md:p-6`, заголовки `text-2xl font-bold`, плотные формы
 - Страницы входа: `flex min-h-screen items-center justify-center p-4` → `Card max-w-md`
-- Страница 404: `container-site py-16`, `max-w-md mx-auto text-center`
+- Страница 404 (`src/app/not-found.tsx`): hero-блок в рамке `container-frame` (`rounded-hero`, градиент `from-primary-dark to-primary` + фото галереи `hero`), шапка и футер подключены явно — корневой not-found рендерится вне layout `(site)`
 
 ### Root Suspense
 

@@ -1,6 +1,7 @@
 /**
  * Теги кэша публичных запросов (`'use cache'` + `cacheTag`).
- * Админка сбрасывает их через `updateTag` (Server Actions) или `revalidateTag(tag, "max")` (route handlers).
+ * Админка сбрасывает их через `updateTag` (Server Actions); route handlers (cron, вебхуки) —
+ * через `revalidateTag(tag, { expire: 0 })`: немедленное истечение, следующий запрос ждёт свежие данные.
  * Модуль без серверных импортов — безопасен для клиентских компонентов.
  */
 export const TAGS = {
