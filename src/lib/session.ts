@@ -1,48 +1,37 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { cache } from "react"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
+
+export type AuthSession = typeof auth.$Infer.Session
 
 /**
- * Protected routes that require authentication.
- * These are also configured in src/proxy.ts for optimistic redirects.
+ * Сессия текущего запроса (дедуплицируется в рамках запроса).
+ * `headers()` — динамический API: вызывать только внутри `<Suspense>`.
  */
-export const protectedRoutes = ["/chat", "/dashboard", "/profile"];
+export const getSession = cache(
+  async (): Promise<AuthSession | null> => auth.api.getSession({ headers: await headers() })
+)
 
-/**
- * Checks if the current request is authenticated.
- * Should be called in Server Components for protected routes.
- *
- * @returns The session object if authenticated
- * @throws Redirects to home page if not authenticated
- */
-export async function requireAuth() {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    redirect("/");
-  }
-
-  return session;
+export function isAdminSession(session: AuthSession | null): session is AuthSession {
+  if (!session || session.user.banned) return false
+  // role может быть списком через запятую (плагин admin)
+  return String(session.user.role ?? "")
+    .split(",")
+    .map((r) => r.trim())
+    .includes("admin")
 }
 
-/**
- * Gets the current session without requiring authentication.
- * Returns null if not authenticated.
- *
- * @returns The session object or null
- */
-export async function getOptionalSession() {
-  return await auth.api.getSession({ headers: await headers() });
+/** Только для страниц и layout'ов админки: нет админа → redirect('/login'). */
+export async function requireAdmin(): Promise<AuthSession> {
+  const session = await getSession()
+  if (!isAdminSession(session)) redirect("/login")
+  return session
 }
 
-/**
- * Checks if a given path is a protected route.
- *
- * @param path - The path to check
- * @returns True if the path requires authentication
- */
-export function isProtectedRoute(path: string): boolean {
-  return protectedRoutes.some(
-    (route) => path === route || path.startsWith(`${route}/`)
-  );
+/** Для Server Actions и route handlers: нет админа → Error('UNAUTHORIZED'). */
+export async function requireAdminAction(): Promise<AuthSession> {
+  const session = await getSession()
+  if (!isAdminSession(session)) throw new Error("UNAUTHORIZED")
+  return session
 }

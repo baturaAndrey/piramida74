@@ -1,44 +1,22 @@
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { SignInButton } from "@/components/auth/sign-in-button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { auth } from "@/lib/auth"
+import { Suspense } from "react"
+import { AuthCard } from "@/components/auth/auth-card"
+import { AuthedRedirect } from "@/components/auth/authed-redirect"
+import { LoginForm } from "@/components/auth/login-form"
+import { Skeleton } from "@/components/ui/skeleton"
+import type { Metadata } from "next"
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ reset?: string }>
-}) {
-  const session = await auth.api.getSession({ headers: await headers() })
+// robots задаётся в (auth)/layout.tsx
+export const metadata: Metadata = { title: "Вход" }
 
-  if (session) {
-    redirect("/dashboard")
-  }
-
-  const { reset } = await searchParams
-
+export default function LoginPage() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>Welcome back</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center">
-          {reset === "success" && (
-            <p className="mb-4 text-sm text-green-600 dark:text-green-400">
-              Password reset successfully. Please sign in with your new password.
-            </p>
-          )}
-          <SignInButton />
-        </CardContent>
-      </Card>
-    </div>
+    <AuthCard title="Вход в админку" description="Бильярдный клуб «Пирамида»">
+      <Suspense>
+        <AuthedRedirect />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+        <LoginForm />
+      </Suspense>
+    </AuthCard>
   )
 }

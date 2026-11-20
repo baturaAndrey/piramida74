@@ -123,11 +123,11 @@ graph TD
 - [x] [task-07-notify-lib](./tasks/task-07-notify-lib.md) — Email (nodemailer) и Telegram
 
 ### Wave 3
-- [ ] [task-08-auth-admin](./tasks/task-08-auth-admin.md) — Better Auth: админ, 2FA, rate limit, login, seed-admin, proxy
-- [ ] [task-09-media-core](./tasks/task-09-media-core.md) — Хранилище в volume, sharp, отдача `/media`, `<Picture>`
-- [ ] [task-10-seed-data](./tasks/task-10-seed-data.md) — Seed: турниры, тарифы, акции, меню, штрафы, настройки
-- [ ] [task-11-lead-capture](./tasks/task-11-lead-capture.md) — LeadForm, попапы, submitLead, согласие, `/spasibo`
-- [ ] [task-12-public-queries](./tasks/task-12-public-queries.md) — Кэшируемые запросы и теги
+- [x] [task-08-auth-admin](./tasks/task-08-auth-admin.md) — Better Auth: админ, 2FA, rate limit, login, seed-admin, proxy
+- [x] [task-09-media-core](./tasks/task-09-media-core.md) — Хранилище в volume, sharp, отдача `/media`, `<Picture>`
+- [x] [task-10-seed-data](./tasks/task-10-seed-data.md) — Seed: турниры, тарифы, акции, меню, штрафы, настройки
+- [x] [task-11-lead-capture](./tasks/task-11-lead-capture.md) — LeadForm, попапы, submitLead, согласие, `/spasibo`
+- [x] [task-12-public-queries](./tasks/task-12-public-queries.md) — Кэшируемые запросы и теги
 
 ### Wave 4
 - [ ] [task-13-site-layout](./tasks/task-13-site-layout.md) — Шапка, футер, cookie-баннер, Метрика, 404

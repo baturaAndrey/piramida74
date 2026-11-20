@@ -1,31 +1,32 @@
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { signOut, useSession } from "@/lib/auth-client";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { signOut } from "@/lib/auth-client"
 
-export function SignOutButton() {
-  const { data: session, isPending } = useSession();
-  const router = useRouter();
-
-  if (isPending) {
-    return <Button disabled>Loading...</Button>;
-  }
-
-  if (!session) {
-    return null;
-  }
+export function SignOutButton({ className }: { className?: string }) {
+  const router = useRouter()
+  const [isPending, setIsPending] = useState(false)
 
   return (
     <Button
       variant="outline"
+      className={className}
+      disabled={isPending}
       onClick={async () => {
-        await signOut();
-        router.replace("/");
-        router.refresh();
+        setIsPending(true)
+        try {
+          await signOut()
+        } finally {
+          router.replace("/login")
+          router.refresh()
+        }
       }}
     >
-      Sign out
+      <LogOut className="size-4" />
+      Выйти
     </Button>
-  );
+  )
 }

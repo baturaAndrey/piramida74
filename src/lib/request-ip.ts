@@ -10,6 +10,9 @@ import { isIP } from "node:net";
 
 type HeaderReader = Pick<Headers, "get">;
 
+/** Значение `getClientIp`, когда IP определить не удалось (нет/невалидны заголовки прокси). */
+export const UNKNOWN_IP = "unknown";
+
 /** Normalise a raw header value to a valid IP (lowercased) or null. */
 function clean(raw: string | null): string | null {
   if (!raw) return null;
@@ -31,7 +34,7 @@ export function getClientIp(headers: HeaderReader): string {
     const last = clean(xff.split(",").at(-1) ?? null);
     if (last) return last;
   }
-  return "unknown";
+  return UNKNOWN_IP;
 }
 
 /** sha256(ip + BETTER_AUTH_SECRET) в hex (64 символа). Исходный IP не хранится. */

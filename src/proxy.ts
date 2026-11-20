@@ -1,25 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
+import { NextRequest, NextResponse } from "next/server"
+import { getSessionCookie } from "better-auth/cookies"
 
 /**
- * Next.js 16 Proxy for auth protection.
- * Uses cookie-based checks for fast, optimistic redirects.
- *
- * Note: This only checks for cookie existence, not validity.
- * Full session validation should be done in each protected page/route.
+ * Только оптимистичный редирект по наличию cookie сессии (без обращения к БД).
+ * Права проверяются в страницах (`requireAdmin`) и Server Actions (`requireAdminAction`).
  */
-export async function proxy(request: NextRequest) {
-  const sessionCookie = getSessionCookie(request);
-
-  // Optimistic redirect - cookie existence check only
-  // Full validation happens in page components via auth.api.getSession()
-  if (!sessionCookie) {
-    return NextResponse.redirect(new URL("/", request.url));
+export function proxy(request: NextRequest) {
+  if (!getSessionCookie(request)) {
+    const url = request.nextUrl.clone()
+    const next = request.nextUrl.pathname + request.nextUrl.search
+    url.pathname = "/login"
+    url.search = ""
+    url.searchParams.set("next", next)
+    return NextResponse.redirect(url)
   }
-
-  return NextResponse.next();
+  return NextResponse.next()
 }
 
-export const config = {
-  matcher: ["/dashboard", "/chat", "/profile"], // Protected routes
-};
+export const config = { matcher: ["/admin/:path*"] }

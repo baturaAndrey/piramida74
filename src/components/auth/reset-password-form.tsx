@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { resetPassword } from "@/lib/auth-client"
 
+/** Совпадает с emailAndPassword.minPasswordLength в src/lib/auth.ts и scripts/seed-admin.ts. */
+const MIN_PASSWORD_LENGTH = 10
+
 export function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -21,17 +24,15 @@ export function ResetPasswordForm() {
 
   if (error === "invalid_token" || !token) {
     return (
-      <div className="space-y-4 w-full max-w-sm text-center">
-        <p className="text-sm text-destructive">
+      <div className="space-y-4 text-center">
+        <p role="alert" className="text-sm text-destructive">
           {error === "invalid_token"
-            ? "This password reset link is invalid or has expired."
-            : "No reset token provided."}
+            ? "Ссылка для сброса пароля недействительна или устарела."
+            : "В ссылке нет токена сброса пароля."}
         </p>
-        <Link href="/forgot-password">
-          <Button variant="outline" className="w-full">
-            Request a new link
-          </Button>
-        </Link>
+        <Button asChild variant="outline" className="w-full">
+          <Link href="/forgot-password">Запросить новую ссылку</Link>
+        </Button>
       </div>
     )
   }
@@ -40,68 +41,82 @@ export function ResetPasswordForm() {
     e.preventDefault()
     setFormError("")
 
-    if (password !== confirmPassword) {
-      setFormError("Passwords do not match")
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setFormError(`Минимум ${MIN_PASSWORD_LENGTH} символов`)
       return
     }
 
-    if (password.length < 8) {
-      setFormError("Password must be at least 8 characters")
+    if (password !== confirmPassword) {
+      setFormError("Пароли не совпадают")
       return
     }
 
     setIsPending(true)
 
     try {
-      const result = await resetPassword({
-        newPassword: password,
-        token,
-      })
+      const result = await resetPassword({ newPassword: password, token })
 
       if (result.error) {
-        setFormError(result.error.message || "Failed to reset password")
+        setFormError(
+          result.error.code === "INVALID_TOKEN"
+            ? "Ссылка для сброса пароля недействительна или устарела. Запросите новую"
+            : "Не удалось сменить пароль. Попробуйте ещё раз"
+        )
       } else {
-        router.push("/login?reset=success")
+        router.replace("/login?reset=success")
       }
     } catch {
-      setFormError("An unexpected error occurred")
+      setFormError("Не удалось сменить пароль. Попробуйте ещё раз")
     } finally {
       setIsPending(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="password">New Password</Label>
+        <Label htmlFor="password">Новый пароль</Label>
         <Input
           id="password"
           type="password"
-          placeholder="Enter new password"
+          autoComplete="new-password"
+          minLength={MIN_PASSWORD_LENGTH}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           disabled={isPending}
+          aria-describedby="password-hint"
         />
+        <p id="password-hint" className="text-xs text-muted-foreground">
+          Минимум {MIN_PASSWORD_LENGTH} символов
+        </p>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+        <Label htmlFor="confirmPassword">Повторите пароль</Label>
         <Input
           id="confirmPassword"
           type="password"
-          placeholder="Confirm new password"
+          autoComplete="new-password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
           disabled={isPending}
         />
       </div>
-      {formError && (
-        <p className="text-sm text-destructive">{formError}</p>
-      )}
+      {formError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {formError}
+        </p>
+      ) : null}
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Resetting..." : "Reset password"}
+        {isPending ? "Сохранение…" : "Сохранить пароль"}
       </Button>
+      <p className="text-center text-sm text-muted-foreground">
+        Вспомнили пароль?{" "}
+        <Link href="/login" className="text-primary hover:underline">
+          Войти
+        </Link>
+      </p>
     </form>
   )
 }

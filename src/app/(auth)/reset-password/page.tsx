@@ -1,36 +1,18 @@
 import { Suspense } from "react"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { AuthCard } from "@/components/auth/auth-card"
 import { ResetPasswordForm } from "@/components/auth/reset-password-form"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { auth } from "@/lib/auth"
+import { Skeleton } from "@/components/ui/skeleton"
+import type { Metadata } from "next"
 
-export default async function ResetPasswordPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+export const metadata: Metadata = { title: "Новый пароль" }
 
-  if (session) {
-    redirect("/dashboard")
-  }
-
+export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>Reset password</CardTitle>
-          <CardDescription>Enter your new password below</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center">
-          <Suspense fallback={<div>Loading...</div>}>
-            <ResetPasswordForm />
-          </Suspense>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthCard title="Новый пароль" description="Придумайте новый пароль для входа в админку">
+      {/* useSearchParams в форме требует Suspense */}
+      <Suspense fallback={<Skeleton className="h-40 w-full" />}>
+        <ResetPasswordForm />
+      </Suspense>
+    </AuthCard>
   )
 }
