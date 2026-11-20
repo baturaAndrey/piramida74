@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import styles from "./reveal.module.css";
 
 type RevealProps = {
   children: React.ReactNode;
@@ -47,7 +46,7 @@ export function Reveal({ children, className, delay }: RevealProps) {
   return (
     <div
       ref={ref}
-      className={cn(styles.reveal, className)}
+      className={cn("scroll-reveal", className)}
       style={delay ? ({ "--reveal-delay": `${delay}ms` } as React.CSSProperties) : undefined}
     >
       {children}

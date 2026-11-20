@@ -17,12 +17,14 @@ import type { ColumnDef } from "@tanstack/react-table";
 const NOTIFY_CLASSES: Record<NotifyState, string> = {
   ok: "text-green-600 dark:text-green-400",
   error: "text-red-600 dark:text-red-400",
+  skipped: "text-muted-foreground",
   none: "text-muted-foreground/50",
 };
 
 const NOTIFY_TEXT: Record<NotifyState, string> = {
   ok: "отправлено",
   error: "ошибка",
+  skipped: "пропущено (не настроено)",
   none: "не отправлялось",
 };
 

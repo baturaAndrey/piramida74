@@ -54,3 +54,12 @@ public/uploads
 
 # source images (not shipped)
 /res/
+
+# e2e / QA artefacts
+/e2e/.auth/
+/e2e/screenshots/*
+!/e2e/screenshots/.gitkeep
+/.lighthouse/
+
+# agent scratch memory
+/.claude/agent-memory/

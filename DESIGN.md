@@ -95,7 +95,7 @@
 
 | Эффект | Реализация |
 |---|---|
-| «Блик» основной кнопки | `animate-blick`: абсолютно позиционированная полоса `rgba(255,255,255,.7)` под 45°, `left` от −80% до 160%, 3 s linear infinite; при hover фон `bg-primary-dark`, блик скрыт |
+| «Блик» основной кнопки | `primary-shine` + `animate-blick` (globals.css): абсолютно позиционированная полоса `rgba(255,255,255,.7)` под 45°, `left` от −80% до 160%, 3 s linear infinite; при hover фон `bg-primary-dark`, блик скрыт. Не переводить на `transform`: десяток композитных слоёв даёт длинную блокировку главного потока в headless Chrome (Lighthouse) |
 | Появление секций | класс `reveal` (CSS `animation-timeline: view()`), fallback `reveal-fallback` + IntersectionObserver (`components/site/reveal.tsx`); сдвиг ≈100 px → 0, 0.5 s |
 | Подчёркивание ссылок | `link-underline`: 1 px, при hover сжимается до 60% |
 | Иконки соцсетей | `hover:scale-110` + `transition-transform` |
@@ -122,6 +122,12 @@
 - Админка `src/app/(admin)/admin/layout.tsx` (задача 14), отдельный layout со своим `<main>`: `SidebarProvider` + `AppSidebar` + контент `p-4 md:p-6`, заголовки `text-2xl font-bold`, плотные формы
 - Страницы входа: `flex min-h-screen items-center justify-center p-4` → `Card max-w-md`
 - Страница 404: `container-site py-16`, `max-w-md mx-auto text-center`
+
+### Root Suspense
+
+Глобальный `<Suspense fallback={null}>` вокруг `children` в root layout **оставлен намеренно**. Общие клиентские компоненты `HeaderNav` (шапка сайта), `AdminSidebar` и `Metrika` вызывают `usePathname()`. На маршрутах с динамическими параметрами (`/blog/[slug]`, `/authors/[slug]`, `/admin/*/[id]`) это считается обращением к данным запроса, и Cache Components требует границы Suspense выше компонента. Без глобальной обёртки `next build` падает (проверено в задаче 28 на `/admin/banquet-sets/[id]`).
+
+Данные страниц при этом всё равно читаются в собственных `<Suspense>` секций со skeleton'ами — так у каждой страницы есть осмысленный статический shell. Глобальную обёртку можно убрать, только если сначала перенести чтение `usePathname()` в отдельные клиентские острова внутри своих `<Suspense>`.
 
 ## Брендинг
 

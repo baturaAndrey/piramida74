@@ -49,11 +49,19 @@ const nextConfig: NextConfig = {
   // src/assets/fonts — woff-шрифты Onest для opengraph-image (кладёт задача 02, читает задача 25)
   serverExternalPackages: ["sharp"],
   outputFileTracingIncludes: {
-    "/*": ["node_modules/sharp/**/*", "src/assets/fonts/**/*"],
+    // @img/sharp-<platform>: на Windows трассировка не забирает libvips-*.dll рядом с .node
+    // (sharp не грузится в standalone → 500 на /media); на Linux пакеты libvips кладутся явно
+    "/*": [
+      "node_modules/sharp/**/*",
+      "node_modules/.pnpm/@img+sharp-*/node_modules/@img/**/*",
+      "src/assets/fonts/**/*",
+    ],
   },
   experimental: {
-    // загрузка до 10 МБ + накладные расходы multipart
-    serverActions: { bodySizeLimit: "12mb" },
+    // Файлы идут через route handler /api/admin/media (свой лимит 10 МБ), не через Server Actions.
+    // Самые большие тела actions — Markdown статьи/юр. документа (≤ 200 000 символов ≈ 0,8 МБ UTF-8);
+    // 2 МБ с запасом, а публичный submitLead не принимает многомегабайтные тела (DoS).
+    serverActions: { bodySizeLimit: "2mb" },
   },
   images: {
     formats: ["image/avif", "image/webp"],

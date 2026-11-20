@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import Lightbox, { type SlideImage } from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
+import { lazy, Suspense, useState } from "react";
 import { Picture } from "@/components/media/picture";
 import { mediaUrl } from "@/lib/media/url";
 import type { PublicMedia } from "@/lib/queries/types";
 import { cn } from "@/lib/utils";
+import type { SlideImage } from "yet-another-react-lightbox";
+
+/* Сам лайтбокс (JS + CSS) — отдельный чанк, грузится при первом открытии фото */
+const loadLightboxViewer = () => import("./lightbox-viewer");
+const LightboxViewer = lazy(loadLightboxViewer);
+
+/** Предзагрузка чанка при наведении/фокусе на фото */
+function prefetchLightbox() {
+  // Ошибку сети здесь глушим: при открытии `React.lazy` запросит модуль ещё раз
+  loadLightboxViewer().catch(() => {});
+}
 
 export type LightboxGalleryItem = { asset: PublicMedia; alt: string };
 
@@ -71,9 +80,11 @@ const TILE_CLASS =
 /**
  * Сетка фото (первое крупно, ниже до 4/5 миниатюр) и полноэкранный просмотр
  * `yet-another-react-lightbox` (Esc, клик вне фото, фокус-ловушка — встроены).
+ * Лайтбокс монтируется при первом открытии и дальше остаётся смонтированным (анимация закрытия).
  */
 export function LightboxGallery({ items, variant, className }: LightboxGalleryProps) {
   const [index, setIndex] = useState(-1);
+  const [viewerMounted, setViewerMounted] = useState(false);
   const [main, ...rest] = items;
   if (!main) return null;
 
@@ -81,13 +92,19 @@ export function LightboxGallery({ items, variant, className }: LightboxGalleryPr
   const thumbs = rest.slice(0, layout.thumbs);
   // В лайтбоксе — только видимые в сетке фото, чтобы номера совпадали с подписями кнопок
   const slides = [main, ...thumbs].map(toSlide);
+  const openAt = (i: number) => {
+    setViewerMounted(true);
+    setIndex(i);
+  };
 
   return (
     <div className={className}>
       <button
         type="button"
         aria-label="Открыть фото 1"
-        onClick={() => setIndex(0)}
+        onClick={() => openAt(0)}
+        onPointerEnter={prefetchLightbox}
+        onFocus={prefetchLightbox}
         className={cn(TILE_CLASS, layout.main)}
       >
         <Picture
@@ -105,7 +122,9 @@ export function LightboxGallery({ items, variant, className }: LightboxGalleryPr
               key={item.asset.id}
               type="button"
               aria-label={`Открыть фото ${i + 2}`}
-              onClick={() => setIndex(i + 1)}
+              onClick={() => openAt(i + 1)}
+              onPointerEnter={prefetchLightbox}
+              onFocus={prefetchLightbox}
               className={cn(TILE_CLASS, layout.thumb)}
             >
               <Picture
@@ -119,13 +138,16 @@ export function LightboxGallery({ items, variant, className }: LightboxGalleryPr
           ))}
         </div>
       ) : null}
-      <Lightbox
-        open={index >= 0}
-        index={Math.max(index, 0)}
-        close={() => setIndex(-1)}
-        slides={slides}
-        controller={{ closeOnBackdropClick: true }}
-      />
+      {viewerMounted ? (
+        <Suspense fallback={null}>
+          <LightboxViewer
+            open={index >= 0}
+            index={Math.max(index, 0)}
+            slides={slides}
+            onClose={() => setIndex(-1)}
+          />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

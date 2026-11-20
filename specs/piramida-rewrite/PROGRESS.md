@@ -113,3 +113,10 @@
   - у `adminAction` появилась опция `afterCommit`;
   - в корневом layout стоит `data-scroll-behavior="smooth"`;
   - `tsBuildInfoFile` вынесен в `node_modules/.cache`.
+
+## Волна 7
+- **task-28** (QA):
+  - e2e: `e2e/*.spec.ts` (home, lead-form, calculator, admin-pricing, admin-tournament-cover, blog, security, seo-legal, zz-login-rate-limit, visual-compare), `auth.setup.ts`, `helpers/*`, `fixtures/*`;
+  - окружение: `.env.e2e` (git-ignored), `pnpm e2e:db [--with-images]` (`scripts/e2e-db.mjs`, БД `piramida_e2e`), `scripts/e2e-start.mjs` — локальный standalone-сервер как в Docker (`next start` со standalone не использовать); `pnpm test:e2e` (setup + chromium + teardown-rate-limit), `pnpm e2e:visual`;
+  - исправления: libvips sharp в standalone (`outputFileTracingIncludes`), zod `jitless` (CSP без eval), lazy `LeadDialogTrigger`/lightbox, политика рендерится на сервере, телефон при вставке, «пропущено» для неконфигурированных уведомлений, `bumpBlogRouteCache` в cron блога, `bodySizeLimit` 2mb, понятная ошибка запроса к БД при сборке;
+  - глобальный `<Suspense>` в root layout оставлен (см. DESIGN.md «Root Suspense»).

@@ -62,13 +62,27 @@ export function normalizePhone(input: string): string | null {
 }
 
 /**
+ * При фокусе поле уже содержит «+7(», и вставка номера с кодом страны («+7 (900) 111-22-33»,
+ * «89001112233») даёт «+7(+7 (900)…» — лишняя «7» сдвигала бы номер. Если после префикса маски
+ * пришёл полный номер с кодом (11 цифр с 7/8), а прежнее значение было неполным, префикс отбрасывается.
+ * Обычный набор так не срабатывает: 11-я цифра после префикса возможна только у уже полного номера.
+ */
+function dropMaskPrefixBeforePastedNumber(previous: string, raw: string): string {
+  if (!raw.startsWith(PHONE_MASK_PREFIX) || isPhoneComplete(previous)) return raw;
+  const rest = raw.slice(PHONE_MASK_PREFIX.length);
+  const digits = rest.replace(/\D/g, "");
+  const hasCountryCode = digits[0] === "7" || digits[0] === "8";
+  return digits.length === PHONE_NATIONAL_LENGTH + 1 && hasCountryCode ? rest : raw;
+}
+
+/**
  * Применяет новое «сырое» значение поля к предыдущему отформатированному.
  * Если пользователь удалял символ (сырое значение короче прежнего), а отформатированное не стало короче
  * (удалён разделитель «)» или «-», который маска тут же вернула бы), удаляется последняя цифра —
  * иначе стереть номер через разделитель невозможно.
  */
 export function applyPhoneInput(previous: string, raw: string): string {
-  const next = formatPhone(raw);
+  const next = formatPhone(dropMaskPrefixBeforePastedNumber(previous, raw));
   const isDeletion = raw.length < previous.length;
   if (isDeletion && next.length >= previous.length) {
     return formatNational(nationalDigits(next).slice(0, -1));

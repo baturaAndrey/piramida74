@@ -1,29 +1,62 @@
+import { existsSync, readFileSync } from "node:fs";
+import { parseEnv } from "node:util";
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
+/**
+ * E2E на production-сборке (то, что реально поедет в Docker: cacheComponents, updateTag,
+ * standalone). Окружение — `.env.e2e` (git-ignored, отдельная БД `piramida_e2e`);
+ * БД пересоздаётся `pnpm e2e:db`. Значения из `.env.e2e` попадают и в webServer, и в
+ * процесс тестов (CRON_SECRET, учётка админа, POSTGRES_URL для SQL-хелперов).
+ */
+const E2E_ENV_FILE = ".env.e2e";
+const e2eEnv: Record<string, string> = existsSync(E2E_ENV_FILE)
+  ? (parseEnv(readFileSync(E2E_ENV_FILE, "utf8")) as Record<string, string>)
+  : {};
+for (const [key, value] of Object.entries(e2eEnv)) process.env[key] ??= value;
+
+const PORT = 3100;
+const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
+export const ADMIN_STORAGE_STATE = "e2e/.auth/admin.json";
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: true,
+  // один процесс Next и общая БД; тесты изолируют данные уникальными именами
+  fullyParallel: false,
+  workers: 1,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
   reporter: [["list"], ["html", { open: "never" }]],
   use: { baseURL, trace: "retain-on-failure", locale: "ru-RU", timezoneId: "Asia/Yekaterinburg" },
-  projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
-  ],
-  // Если E2E_BASE_URL не задан — поднимаем dev-сервер сами (нужны .env и запущенная БД)
-  // (условный spread, т.к. exactOptionalPropertyTypes запрещает webServer: undefined)
   ...(process.env.E2E_BASE_URL
     ? {}
     : {
         webServer: {
-          command: "pnpm dev",
-          // readiness probe: "/" may 404 (Playwright waits for 2xx/3xx), health also confirms the DB
+          // standalone-сервер (как в Dockerfile): `next start` с output: standalone не поддерживается
+          command: `pnpm build:ci && node scripts/e2e-start.mjs ${PORT}`,
           url: `${baseURL}/api/health`,
-          reuseExistingServer: true,
-          timeout: 120_000,
+          reuseExistingServer: !process.env.CI,
+          timeout: 600_000,
+          stdout: "pipe" as const,
+          env: { ...e2eEnv, PORT: String(PORT) },
         },
       }),
+  projects: [
+    { name: "setup", testMatch: /auth\.setup\.ts/ },
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"], storageState: ADMIN_STORAGE_STATE },
+      dependencies: ["setup"],
+      testIgnore: [/visual-compare/, /auth\.setup\.ts/, /zz-login-rate-limit/],
+    },
+    {
+      // Исчерпывает лимит входа для своего IP — строго после всех остальных тестов
+      name: "teardown-rate-limit",
+      testMatch: /zz-login-rate-limit\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["chromium"],
+    },
+    { name: "visual", testMatch: /visual-compare\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
+  ],
 });

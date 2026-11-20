@@ -10,7 +10,19 @@ function createClient() {
     // Во время `next build` (в том числе docker build) БД нет — клиент postgres-js
     // не подключается, пока не выполнен запрос; в рантайме отсутствие переменной — ошибка конфигурации.
     if (process.env.NEXT_PHASE === "phase-production-build") {
-      return postgres("postgres://build:build@127.0.0.1:5432/build", { max: 1 });
+      // Любой запрос на этапе сборки — ошибка архитектуры (чтение БД должно идти после
+      // `connection()` внутри <Suspense>). Вместо невнятного ECONNREFUSED падаем с понятным текстом.
+      // `socket` — runtime-опция postgres-js (вызывается при подключении), в .d.ts её нет
+      const buildOptions = {
+        max: 1,
+        socket: () => {
+          throw new Error(
+            "Запрос к БД во время `next build`: БД при сборке недоступна. " +
+              "Читайте данные после `await connection()` внутри <Suspense> (Cache Components)."
+          );
+        },
+      } as unknown as postgres.Options<Record<string, never>>;
+      return postgres("postgres://build:build@127.0.0.1:5432/build", buildOptions);
     }
     throw new Error("POSTGRES_URL environment variable is not set");
   }

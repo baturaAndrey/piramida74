@@ -151,4 +151,4 @@ graph TD
 - [x] [task-27-home-assembly](./tasks/task-27-home-assembly.md) — Сборка `src/app/(site)/page.tsx`
 
 ### Wave 7
-- [ ] [task-28-qa-verification](./tasks/task-28-qa-verification.md) — Playwright e2e, визуальная сверка, Lighthouse, security, Docker
+- [x] [task-28-qa-verification](./tasks/task-28-qa-verification.md) — Playwright e2e, визуальная сверка, Lighthouse, security, Docker

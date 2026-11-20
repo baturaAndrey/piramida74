@@ -318,3 +318,77 @@
     transition: none;
   }
 }
+
+/*
+ * Стили компонентов, перенесённые из CSS Modules: каждый модуль давал на всех страницах
+ * отдельный блокирующий отрисовку <link> (~1 КБ). Правила намеренно вне @layer — как и
+ * CSS Modules, они перекрывают утилиты Tailwind на том же элементе.
+ */
+
+/*
+ * «Блик» основной кнопки (.md-main-color-btn::after старого сайта, components/site/primary-button.tsx):
+ * белая полоса rgba(255,255,255,.7) под 45°, бежит слева направо за 3 s.
+ * Сама анимация — утилита `after:animate-blick` (keyframes `blick` выше).
+ * Анимируется `left` (перерисовка внутри кнопки), а не transform: на композиторе каждая кнопка
+ * получала бы свой анимируемый слой, и в headless Chrome без GPU (Lighthouse/PSI) это давало
+ * длинную блокировку главного потока при первых кадрах (замерено на главной: TBT ×2–4).
+ */
+.primary-shine {
+  position: relative;
+  overflow: hidden;
+  /* Своя стековая область: полоса (z-index: -1) идёт над фоном кнопки, но под текстом */
+  isolation: isolate;
+}
+
+.primary-shine::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -80%;
+  width: 40px;
+  height: 140%;
+  background: rgba(255, 255, 255, 0.7);
+  transform: rotate(45deg);
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.primary-shine:hover::after,
+.primary-shine:disabled::after,
+.primary-shine[aria-disabled="true"]::after {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-shine::after {
+    animation: none;
+    display: none;
+  }
+}
+
+/*
+ * Появление при прокрутке (components/site/reveal.tsx). Атрибут data-reveal выставляет
+ * только клиент, поэтому без JS и до гидрации контент виден сразу.
+ */
+.scroll-reveal[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translateY(clamp(24px, 5.2vw, 100px));
+}
+
+.scroll-reveal[data-reveal="shown"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal[data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { PolicyDialog } from "@/components/leads/policy-dialog";
+import { PolicyDocument } from "@/components/leads/policy-document";
 import { getToday } from "@/lib/dates";
 import { getCurrentLegalDocument, type PublicLegalDocument } from "@/lib/queries/legal";
 import { getSettings } from "@/lib/queries/settings";
@@ -65,7 +66,10 @@ function FooterContent({ year, policy, settings }: FooterContentProps) {
       <div className="flex flex-col gap-1 sm:items-end sm:text-right">
         <p className="flex flex-wrap gap-x-5 gap-y-1 sm:justify-end">
           {policy ? (
-            <PolicyDialog title={policy.title || POLICY_FALLBACK_TITLE} markdown={policy.text}>
+            <PolicyDialog
+              title={policy.title || POLICY_FALLBACK_TITLE}
+              content={<PolicyDocument markdown={policy.text} />}
+            >
               <button type="button" className={LINK_CLASS}>
                 {POLICY_FALLBACK_TITLE}
               </button>

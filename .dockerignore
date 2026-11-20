@@ -28,3 +28,4 @@ docker-compose.yml
 npm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
+.lighthouse

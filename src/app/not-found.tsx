@@ -14,7 +14,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Фото из галереи `hero` поверх градиента; без фото остаётся градиент */
+/**
+ * Фото из галереи `hero` поверх градиента; без фото остаётся градиент.
+ * Без `priority`: корневой not-found Next.js отправляет вместе с КАЖДОЙ страницей, и
+ * `preload()` из Picture добавлял высокоприоритетную загрузку этого фото на всех страницах,
+ * отнимая канал у CSS/JS и настоящего LCP-изображения.
+ */
 async function HeroBackground() {
   await connection();
   const gallery = await getGallery("hero");
@@ -26,7 +31,6 @@ async function HeroBackground() {
       asset={item.media}
       sizes="98vw"
       alt=""
-      priority
       pictureClassName="absolute inset-0"
       className="absolute inset-0 size-full object-cover opacity-60"
     />

@@ -17,6 +17,7 @@ import {
   CALLBACK_WINDOW_LABELS,
   formatIsoDate,
   fullDateTimeFormat,
+  isNotifySkipped,
   LEAD_STATUS_BADGE_CLASSES,
   LEAD_STATUS_LABELS,
   LEAD_TYPE_LABELS,
@@ -170,14 +171,15 @@ function ChannelStatus({
   label: string;
   status: NotifyChannelStatus | undefined;
 }) {
+  const skipped = isNotifySkipped(status);
   return (
     <li className="flex items-start gap-3">
       <span
         className={cn(
           "mt-0.5 shrink-0",
-          !status && "text-muted-foreground",
+          (!status || skipped) && "text-muted-foreground",
           status?.ok && "text-green-600 dark:text-green-400",
-          status && !status.ok && "text-red-600 dark:text-red-400"
+          status && !status.ok && !skipped && "text-red-600 dark:text-red-400"
         )}
       >
         {icon}
@@ -189,11 +191,13 @@ function ChannelStatus({
             <span className="text-muted-foreground font-normal">не отправлялось</span>
           ) : status.ok ? (
             <span className="text-green-600 dark:text-green-400">отправлено</span>
+          ) : skipped ? (
+            <span className="text-muted-foreground font-normal">пропущено (не настроено)</span>
           ) : (
             <span className="text-red-600 dark:text-red-400">ошибка</span>
           )}
         </p>
-        {status && !status.ok && status.error ? (
+        {status && !status.ok && !skipped && status.error ? (
           <p className="text-muted-foreground font-mono text-xs break-words">{status.error}</p>
         ) : null}
         {status ? (

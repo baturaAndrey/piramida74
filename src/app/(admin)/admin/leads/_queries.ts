@@ -13,10 +13,15 @@ import {
 } from "@/lib/schema";
 import type { LeadStatus, LeadType, LegalDocType } from "@/lib/schema/enums";
 import { buildLeadsWhere, LEADS_PAGE_SIZE, type LeadsSearchParams } from "./_lib/filters";
-import { formatLeadListDate, parseQuoteSnapshot, type QuoteSnapshot } from "./_lib/labels";
+import {
+  formatLeadListDate,
+  isNotifySkipped,
+  parseQuoteSnapshot,
+  type QuoteSnapshot,
+} from "./_lib/labels";
 
 /** Состояние канала уведомлений для иконки в таблице */
-export type NotifyState = "ok" | "error" | "none";
+export type NotifyState = "ok" | "error" | "skipped" | "none";
 
 /** Строка списка заявок (сериализуемая — уходит в клиентскую таблицу) */
 export type LeadRow = {
@@ -39,7 +44,8 @@ export type LeadsListResult = { rows: LeadRow[]; total: number; page: number; pa
 
 function notifyState(channel: NotifyChannelStatus | undefined): NotifyState {
   if (!channel) return "none";
-  return channel.ok ? "ok" : "error";
+  if (channel.ok) return "ok";
+  return isNotifySkipped(channel) ? "skipped" : "error";
 }
 
 export function toNotifyStates(status: LeadNotifyStatus): LeadRow["notify"] {

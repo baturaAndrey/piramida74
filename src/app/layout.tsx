@@ -48,7 +48,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ru" data-scroll-behavior="smooth">
       <body className={`${onest.variable} min-h-screen antialiased`}>
-        {/* Cache Components: страницы, читающие headers()/cookies() без своего Suspense, не ломают пререндер */}
+        {/* Cache Components: общие клиентские компоненты (HeaderNav, AdminSidebar, Metrika) читают
+            usePathname(); на маршрутах с динамическими параметрами это требует границы Suspense
+            выше них. Обоснование — DESIGN.md, раздел «Root Suspense». */}
         <Suspense fallback={null}>{children}</Suspense>
         <Toaster richColors position="top-right" />
       </body>

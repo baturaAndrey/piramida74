@@ -15,6 +15,9 @@ type TypingOptions = {
 
 type Mode = "hold" | "erase" | "type";
 
+/** Предельное ожидание простоя перед стартом печати после `load`, мс */
+const START_IDLE_TIMEOUT_MS = 2000;
+
 /**
  * Циклически «печатает» и стирает фразы.
  * SSR и первый кадр — полная первая фраза (хороший LCP, бейдж не пустой);
@@ -36,7 +39,7 @@ export function useTypingPhrases(
     let index = 0;
     let pos = (list[0] ?? "").length;
     let mode: Mode = "hold";
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     const tick = () => {
       const current = list[index] ?? "";
@@ -67,9 +70,31 @@ export function useTypingPhrases(
       }
     };
 
-    // Первый тик в режиме `hold` сам выдерживает паузу `hold` перед стиранием
-    timer = setTimeout(tick, 0);
-    return () => clearTimeout(timer);
+    // Цикл стартует после загрузки страницы и в простое главного потока: каждый тик —
+    // ре-рендер и перерисовка, которые иначе конкурируют с загрузкой и гидратацией.
+    // Первая фраза уже показана (SSR), поэтому отложенный старт незаметен.
+    // Первый тик в режиме `hold` сам выдерживает паузу `hold` перед стиранием.
+    let idleHandle: number | undefined;
+    const run = () => {
+      timer = setTimeout(tick, 0);
+    };
+    const start = () => {
+      idleHandle =
+        typeof window.requestIdleCallback === "function"
+          ? window.requestIdleCallback(run, { timeout: START_IDLE_TIMEOUT_MS })
+          : window.setTimeout(run, 0);
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+
+    return () => {
+      window.removeEventListener("load", start);
+      if (idleHandle !== undefined) {
+        if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idleHandle);
+        else window.clearTimeout(idleHandle);
+      }
+      clearTimeout(timer);
+    };
   }, [phrasesKey, type, erase, hold, gap]);
 
   return text;

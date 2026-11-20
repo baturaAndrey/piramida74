@@ -53,6 +53,18 @@ describe("applyPhoneInput", () => {
     expect(applyPhoneInput("+7(800)1", "+7(8001")).toBe("+7(800");
   });
 
+  it("drops the mask prefix when a full number with country code is pasted", () => {
+    expect(applyPhoneInput("+7(", "+7(+7 (900) 111-22-33")).toBe("+7(900)111-22-33");
+    expect(applyPhoneInput("+7(", "+7(89001112233")).toBe("+7(900)111-22-33");
+    expect(applyPhoneInput("", "+7 (900) 111-22-33")).toBe("+7(900)111-22-33");
+    // Вставка национального номера без кода — как раньше
+    expect(applyPhoneInput("+7(", "+7(9001112233")).toBe("+7(900)111-22-33");
+  });
+
+  it("does not shift a complete number when an extra digit is typed", () => {
+    expect(applyPhoneInput("+7(800)123-45-67", "+7(800)123-45-678")).toBe("+7(800)123-45-67");
+  });
+
   it("clears the field when the prefix is deleted", () => {
     expect(applyPhoneInput("+7(", "+7")).toBe("");
   });

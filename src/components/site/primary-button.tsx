@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
-import styles from "./primary-button.module.css";
 
 type PrimaryButtonSize = "default" | "sm";
 /** `primary` — зелёная с бликом; `outline` — на светлом фоне; `outline-light` — на тёмном (hero) */
@@ -41,10 +40,9 @@ const SIZES: Record<PrimaryButtonSize, string> = {
 };
 
 const VARIANTS: Record<PrimaryButtonVariant, string> = {
-  primary: cn(
-    "bg-primary text-primary-foreground hover:bg-primary-dark after:animate-blick",
-    styles.shine
-  ),
+  // `primary-shine` — полоса «блика» (globals.css)
+  primary:
+    "bg-primary text-primary-foreground hover:bg-primary-dark primary-shine after:animate-blick",
   outline:
     "border border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground",
   "outline-light":

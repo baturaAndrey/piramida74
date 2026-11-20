@@ -57,6 +57,14 @@ export const CALLBACK_WINDOW_LABELS: Record<CallbackWindow, string> = {
   week: "На этой неделе",
 };
 
+/** Ошибка sendEmail/sendTelegram, когда канал не настроен (нет SMTP / бота) */
+const NOTIFY_NOT_CONFIGURED = "not_configured";
+
+/** Канал не настроен — это пропуск уведомления, а не сбой отправки */
+export function isNotifySkipped(status: { ok: boolean; error?: string } | undefined): boolean {
+  return status?.ok === false && status.error === NOTIFY_NOT_CONFIGURED;
+}
+
 /** «12 400 ₽» (неразрывные пробелы) */
 export function formatRub(amount: number): string {
   const rounded = Math.round(amount);
