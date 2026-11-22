@@ -43,6 +43,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { authClient } from "@/lib/auth-client";
 
 const QR_SIZE = 192;
@@ -198,7 +199,7 @@ function PasswordDialog({ action, email, onClose, onSubmit }: PasswordDialogProp
                   <FormItem>
                     <FormLabel>Пароль</FormLabel>
                     <FormControl>
-                      <Input type="password" autoComplete="current-password" autoFocus {...field} />
+                      <PasswordInput autoComplete="current-password" autoFocus {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

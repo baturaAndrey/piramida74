@@ -57,8 +57,9 @@ export function PageHeader({
           </BreadcrumbList>
         </Breadcrumb>
       ) : null}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 items-start gap-2">
+      {/* flex-wrap: кнопки уходят под заголовок, когда им не хватает места, а не сжимают его */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-[min(100%,16rem)] flex-1 items-start gap-2">
           {backHref ? (
             <Button asChild variant="ghost" size="icon" className="-ml-2 shrink-0">
               <Link href={backHref} aria-label="Назад">
@@ -71,9 +72,7 @@ export function PageHeader({
             {description ? <p className="text-muted-foreground text-sm">{description}</p> : null}
           </div>
         </div>
-        {actions ? (
-          <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
-        ) : null}
+        {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
       </div>
     </div>
   );

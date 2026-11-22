@@ -89,6 +89,7 @@
 | Утилита | Значение |
 |---|---|
 | `container-site` (компонент `Container`) | Контент: `width: 100%; max-width: 1920px; margin-inline: auto; padding-inline: var(--gutter)`. Шапка, футер и все секции |
+| `container-admin` | Админка: `container-site`, поле которого обходит вынесенный из потока сайдбар (см. «Раскладка») |
 | `px-gutter` | Только боковое поле, без ограничения ширины |
 | `container-frame` | Скруглённый фото-блок (hero, «О клубе», форма заявки, 404, /spasibo): внутри рамки 1920 с отступом `--frame-inset` = `clamp(8px, 1vw, 19px)` от её краёв |
 | `px-gutter-framed` | Поле внутри `container-frame` (`--gutter − --frame-inset`): текст фото-блока стоит на той же вертикали, что и контент остальных секций |
@@ -133,7 +134,7 @@
 
 - Root layout (`src/app/layout.tsx`, задача 02): только `<html lang="ru">` + `<body>` (класс шрифта Onest) + `{children}` (в `<Suspense>` для Cache Components) + `<Toaster />`. **Без** шапки, футера и `<main>`
 - Публичный сайт `src/app/(site)/layout.tsx` (задача 13): `Header` (закреплённая, `bg-nav` при прокрутке) + `<main id="main-content" className="flex-1">` + `Footer` (`bg-footer`, 13 px) + CookieBanner + Метрика
-- Админка `src/app/(admin)/admin/layout.tsx` (задача 14), отдельный layout со своим `<main>`: `SidebarProvider` + `AppSidebar` + контент `p-4 md:p-6`, заголовки `text-2xl font-bold`, плотные формы
+- Админка `src/app/(admin)/admin/layout.tsx` (задача 14), отдельный layout со своим `<main>` (как в billiard-darom): `SidebarProvider` + `AdminSidebar` (shadcn, `fixed` у левого края экрана, вынесен из потока — `sidebar-gap` скрыт) + `SidebarInset`, внутри которого шапка (триггер, «Открыть сайт») и контент стоят в рамке `container-admin` (`globals.css`): это `container-site`, левое поле которого обходит сайдбар (`--admin-clear` = ширина сайдбара + 1.5rem на `md+`), а правое на 1920 такое же — контент по центру экрана ≈1360 px и сужается 1:1 до `--gutter` на меньших ширинах. При свёрнутом сайдбаре, на мобильном (меню — Sheet) и шире ~2120 px края совпадают с шапкой сайта. Вертикальный отступ контента `py-4 md:py-6`, формы — `mx-auto max-w-4xl` внутри; `PageHeader` переносит кнопки под заголовок, если им не хватает места; заголовки `text-2xl font-bold`, плотные формы
 - Страницы входа: `flex min-h-screen items-center justify-center p-4` → `Card max-w-md`
 - Страница 404 (`src/app/not-found.tsx`): hero-блок в рамке `container-frame` (`rounded-hero`, градиент `from-primary-dark to-primary` + фото галереи `hero`), шапка и футер подключены явно — корневой not-found рендерится вне layout `(site)`
 

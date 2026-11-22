@@ -271,6 +271,34 @@
   padding-inline: var(--gutter);
 }
 
+/*
+ * Контент админки (как в billiard-darom): та же рамка 1920 + --gutter, что у container-site,
+ * но сайдбар вынесен из потока (fixed у левого края экрана), поэтому поле должно его обходить.
+ * --admin-clear (ширина сайдбара + зазор; 0, когда сайдбар скрыт/мобильный) задаёт layout админки.
+ * 100% в padding — ширина родителя, (100% − 1920px)/2 — внешнее поле рамки на экранах шире 1920.
+ *  - слева: не меньше --gutter и не меньше, чем нужно, чтобы обойти сайдбар;
+ *  - справа: на 1920 — столько же (контент по центру экрана, ≈1360 px, как в darom), на более
+ *    узких экранах уменьшается 1:1 с шириной до --gutter, чтобы контент не сжимался раньше времени.
+ * Без сайдбара обе формулы дают ровно container-site — края совпадают с шапкой сайта.
+ */
+@utility container-admin {
+  --admin-frame-margin: max(0px, (100% - 1920px) / 2);
+  width: 100%;
+  max-width: 1920px;
+  margin-inline: auto;
+  padding-left: max(var(--gutter), var(--admin-clear, 0px) - var(--admin-frame-margin));
+  padding-right: max(
+    var(--gutter),
+    var(--admin-clear, 0px) - var(--admin-frame-margin) - max(0px, 1920px - 100%)
+  );
+  /* Синхронно со сдвигом сайдбара shadcn (он так же анимирует ширину sidebar-gap) */
+  transition: padding 200ms linear;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
 /* Только боковое поле, без ограничения ширины */
 @utility px-gutter {
   padding-inline: var(--gutter);

@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { authClient } from "@/lib/auth-client";
 
 /** = MIN_PASSWORD_LENGTH в src/lib/auth.ts (серверный модуль в клиент не импортируем) */
@@ -114,7 +114,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
             <FormItem>
               <FormLabel>Текущий пароль</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="current-password" {...field} />
+                <PasswordInput autoComplete="current-password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -127,7 +127,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
             <FormItem>
               <FormLabel>Новый пароль</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="new-password" {...field} />
+                <PasswordInput autoComplete="new-password" {...field} />
               </FormControl>
               <FormDescription>Не короче {MIN_PASSWORD_LENGTH} символов.</FormDescription>
               <FormMessage />
@@ -141,7 +141,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
             <FormItem>
               <FormLabel>Повторите новый пароль</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="new-password" {...field} />
+                <PasswordInput autoComplete="new-password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

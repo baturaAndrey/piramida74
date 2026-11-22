@@ -69,7 +69,7 @@ test.describe("без сессии", () => {
   test("в браузере /admin/leads открывает форму входа", async ({ page }) => {
     await page.goto("/admin/leads");
     await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2Fleads/);
-    await expect(page.getByLabel("Пароль")).toBeVisible();
+    await expect(page.getByLabel("Пароль", { exact: true })).toBeVisible();
   });
 
   test("API медиатеки без сессии → 401", async ({ playwright }, testInfo) => {
@@ -547,7 +547,7 @@ test("2FA: включение показывает QR-код (SVG), без по�
     await page.goto("/admin/account");
     await page.getByRole("button", { name: "Включить 2FA" }).click();
     const dialog = page.getByRole("dialog");
-    await dialog.getByLabel("Пароль").fill(password);
+    await dialog.getByLabel("Пароль", { exact: true }).fill(password);
     await dialog.getByRole("button", { name: "Продолжить" }).click();
     await expect(dialog).toBeHidden();
 

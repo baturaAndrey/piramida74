@@ -4,8 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/ui/password-input"
 import { resetPassword } from "@/lib/auth-client"
 
 /** Совпадает с emailAndPassword.minPasswordLength в src/lib/auth.ts и scripts/seed-admin.ts. */
@@ -76,9 +76,8 @@ export function ResetPasswordForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="password">Новый пароль</Label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="new-password"
           minLength={MIN_PASSWORD_LENGTH}
           value={password}
@@ -93,9 +92,8 @@ export function ResetPasswordForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">Повторите пароль</Label>
-        <Input
+        <PasswordInput
           id="confirmPassword"
-          type="password"
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}

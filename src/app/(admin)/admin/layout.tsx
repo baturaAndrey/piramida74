@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db";
 import { leads } from "@/lib/schema";
 import { requireAdmin } from "@/lib/session";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -44,9 +45,22 @@ async function SidebarUser() {
   return <AdminUserMenu name={session.user.name} email={session.user.email} />;
 }
 
+/**
+ * Раскладка как в billiard-darom: сайдбар вынесен из потока (fixed у левого края экрана, его
+ * «распорка» sidebar-gap скрыта), а шапка и контент стоят в рамке `container-admin` — это
+ * `container-site` сайта, поле которой обходит сайдбар. `--admin-clear` = ширина сайдбара + зазор
+ * на md+ при открытом сайдбаре; при свёрнутом и на мобильном (там меню — Sheet) — 0, и края
+ * контента совпадают с шапкой сайта.
+ */
+const ADMIN_SHELL_CLASS = cn(
+  "[&_[data-slot=sidebar-gap]]:hidden",
+  "md:[--admin-clear:calc(var(--sidebar-width)+1.5rem)]",
+  "md:has-[[data-slot=sidebar][data-state=collapsed]]:[--admin-clear:0px]"
+);
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider className={ADMIN_SHELL_CLASS}>
       <AdminSidebar
         leadsBadge={
           <Suspense fallback={null}>
@@ -59,24 +73,27 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </Suspense>
         }
       />
-      <SidebarInset>
-        <header className="bg-background/95 sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b px-4 backdrop-blur md:px-6">
-          <SidebarTrigger className="-ml-1" aria-label="Показать или скрыть меню" />
-          <Separator orientation="vertical" className="mr-1 h-4" />
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 ml-auto inline-flex items-center gap-1.5 rounded-md text-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none"
-          >
-            Открыть сайт
-            <ExternalLink className="h-4 w-4" aria-hidden />
-          </a>
-        </header>
-        <div className="flex-1 p-4 md:p-6">
-          <Suspense fallback={<AdminPageSkeleton />}>
-            <AdminGate>{children}</AdminGate>
-          </Suspense>
+      {/* min-w-0: широкие таблицы скроллятся внутри своих обёрток, а не растягивают страницу */}
+      <SidebarInset className="min-w-0">
+        <div className="container-admin flex flex-1 flex-col">
+          <header className="bg-background/95 sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b backdrop-blur">
+            <SidebarTrigger className="-ml-1.5" aria-label="Показать или скрыть меню" />
+            <Separator orientation="vertical" className="mr-1 h-4" />
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 ml-auto inline-flex items-center gap-1.5 rounded-md text-sm transition-colors focus-visible:ring-[3px] focus-visible:outline-none"
+            >
+              Открыть сайт
+              <ExternalLink className="h-4 w-4" aria-hidden />
+            </a>
+          </header>
+          <div className="flex-1 py-4 md:py-6">
+            <Suspense fallback={<AdminPageSkeleton />}>
+              <AdminGate>{children}</AdminGate>
+            </Suspense>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
