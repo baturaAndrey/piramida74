@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { PromotionForm } from "../_components/promotion-form";
 import { getPromotion, listMenuCategoryOptions } from "../_queries";
 import type { PromotionInput } from "../_schema";
@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Акция" };
 
 export default async function EditPromotionPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { PricingTabs } from "./_components/pricing-tabs";
 import { DEFAULT_PRICING_TAB, isPricingTab } from "./_lib/labels";
 import { getPricingAdminData } from "./_queries";
@@ -26,7 +26,7 @@ export default function AdminPricingPage({ searchParams }: { searchParams: Searc
 }
 
 async function PricingContent({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const [params, data] = await Promise.all([searchParams, getPricingAdminData()]);
   const tab = isPricingTab(params.tab) ? params.tab : DEFAULT_PRICING_TAB;
   return <PricingTabs initialTab={tab} data={data} />;

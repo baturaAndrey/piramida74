@@ -1,7 +1,7 @@
 import { ArticleForm } from "@/components/admin/blog/article-form";
 import { PageHeader } from "@/components/admin/page-header";
 import { listAuthorOptions, listRubricOptions, listTagOptions } from "@/lib/blog-admin/queries";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import type { ArticleInput } from "@/lib/validation/blog";
 import type { Metadata } from "next";
 
@@ -26,7 +26,7 @@ const EMPTY_ARTICLE: ArticleInput = {
 };
 
 export default async function NewArticlePage() {
-  await requireAdmin();
+  await requireStaff();
   const [rubrics, authors, tags] = await Promise.all([
     listRubricOptions(),
     listAuthorOptions(),

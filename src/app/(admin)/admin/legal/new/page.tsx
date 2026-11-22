@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { getClientEnv } from "@/lib/env";
 import { getSettings } from "@/lib/queries/settings";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { LegalForm } from "../_components/legal-form";
 import { getCurrentLegalSource } from "../_queries";
 import { LEGAL_DEFAULT_TITLES, LEGAL_TYPE_LABELS, legalTypeSchema } from "../_schema";
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Новая версия докуме
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 async function NewLegalContent({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const parsedType = legalTypeSchema.safeParse((await searchParams).type);
   if (!parsedType.success) redirect("/admin/legal");
   const type = parsedType.data;

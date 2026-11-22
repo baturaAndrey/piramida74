@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { TournamentsTable } from "./_components/tournaments-table";
 import { parseWhen } from "./_lib/labels";
 import { listTournaments, listTournamentYears } from "./_queries";
@@ -21,7 +21,7 @@ export default async function AdminTournamentsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  await requireAdmin();
+  await requireStaff();
   const params = await searchParams;
   const when = parseWhen(single(params.when));
   const rawYear = single(params.year);

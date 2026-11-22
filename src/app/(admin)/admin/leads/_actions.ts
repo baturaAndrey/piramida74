@@ -1,7 +1,7 @@
 "use server";
 
 import { unstable_rethrow } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { ActionError, type ActionResult, adminAction } from "@/lib/admin/action";
 import { audit } from "@/lib/admin/audit";
@@ -17,7 +17,8 @@ import {
 import { sendTelegram } from "@/lib/notify/telegram";
 import { getSettings } from "@/lib/queries/settings";
 import { leads, type LeadNotifyStatus } from "@/lib/schema";
-import { requireAdminAction } from "@/lib/session";
+import { requireStaffAction } from "@/lib/session";
+import { deleteLeadsSchema } from "./_lib/delete";
 import { LEAD_STATUSES } from "./_lib/labels";
 import { getLead, type LeadDetail } from "./_queries";
 
@@ -49,6 +50,46 @@ export const setLeadStatus = adminAction(
   { tags: [] }
 );
 
+/**
+ * Безвозвратное удаление заявок (одной — со страницы заявки, нескольких — из списка).
+ * Дочерних таблиц у заявок нет (ссылки только ИЗ leads), поэтому достаточно DELETE.
+ * Аудит — по записи на заявку, без персональных данных (номер, тип, статус, дата).
+ * Публичного кэша заявки не касаются; клиент делает `router.refresh()` (список + бейдж новых).
+ */
+export const deleteLeads = adminAction(
+  deleteLeadsSchema,
+  async (input, ctx) => {
+    const deleted = await ctx.tx.delete(leads).where(inArray(leads.id, input.ids)).returning({
+      id: leads.id,
+      number: leads.number,
+      type: leads.type,
+      status: leads.status,
+      createdAt: leads.createdAt,
+    });
+    if (deleted.length === 0) throw new ActionError("Заявки не найдены — возможно, уже удалены");
+
+    for (const lead of deleted) {
+      await audit(
+        ctx.userId,
+        "lead.delete",
+        "lead",
+        lead.id,
+        {
+          before: {
+            number: lead.number,
+            type: lead.type,
+            status: lead.status,
+            createdAt: lead.createdAt.toISOString(),
+          },
+        },
+        ctx.tx
+      );
+    }
+    return { deleted: deleted.length };
+  },
+  { tags: [] }
+);
+
 const resendSchema = z.object({ id: z.uuid() });
 
 const ERR_UNAUTHORIZED = "Нет доступа";
@@ -70,7 +111,7 @@ export async function resendLeadNotification(
 ): Promise<ActionResult<LeadNotifyStatus>> {
   let userId: string;
   try {
-    userId = (await requireAdminAction()).user.id;
+    userId = (await requireStaffAction()).user.id;
   } catch (error) {
     unstable_rethrow(error);
     return { ok: false, error: ERR_UNAUTHORIZED };

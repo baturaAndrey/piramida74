@@ -5,14 +5,14 @@ import { AuthorForm } from "@/components/admin/blog/author-form";
 import { PageHeader } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
 import { countAuthorArticles, getAuthorForEdit } from "@/lib/blog-admin/queries";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import type { AuthorFormInput } from "@/lib/validation/blog";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Автор" };
 
 export default async function EditAuthorPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 

@@ -1,6 +1,6 @@
 import { AuthorForm } from "@/components/admin/blog/author-form";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import type { AuthorFormInput } from "@/lib/validation/blog";
 import type { Metadata } from "next";
 
@@ -18,7 +18,7 @@ const EMPTY_AUTHOR: AuthorFormInput = {
 };
 
 export default async function NewAuthorPage() {
-  await requireAdmin();
+  await requireStaff();
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader

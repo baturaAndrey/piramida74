@@ -6,7 +6,7 @@ import { toMediaDto, type MediaDto } from "@/lib/admin/media-dto";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/queries/settings";
 import { mediaAssets } from "@/lib/schema";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { SettingsForm } from "./_components/settings-form";
 import { TelegramPiiSwitch } from "./_components/telegram-pii-switch";
 import type { Metadata } from "next";
@@ -28,7 +28,7 @@ async function loadOgImage(id: string | null): Promise<MediaDto | null> {
 }
 
 async function SettingsContent() {
-  await requireAdmin();
+  await requireStaff();
   // После updateTag(settings) getSettings возвращает свежие значения
   const { telegramIncludePii, ...settings } = await getSettings();
   const ogImage = await loadOgImage(settings.seoDefaults.ogImageMediaId);

@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { listSeriesWithCounts } from "../_queries";
 import { SeriesManager } from "./_components/series-manager";
 import type { Metadata } from "next";
@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Серии турниров" };
 
 export default async function TournamentSeriesPage() {
-  await requireAdmin();
+  await requireStaff();
   const series = await listSeriesWithCounts();
 
   return (

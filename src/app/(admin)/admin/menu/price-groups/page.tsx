@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { MenuNav } from "../_components/menu-nav";
 import { PriceGroupsManager } from "../_components/price-groups-manager";
 import { listPriceGroups } from "../_queries";
@@ -25,7 +25,7 @@ export default function PriceGroupsPage() {
 }
 
 async function PriceGroupsContent() {
-  await requireAdmin();
+  await requireStaff();
   const groups = await listPriceGroups();
   return <PriceGroupsManager groups={groups} />;
 }

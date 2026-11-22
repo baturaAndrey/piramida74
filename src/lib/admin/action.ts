@@ -4,7 +4,7 @@ import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import type { DbOrTx } from "@/lib/admin/audit";
 import { db } from "@/lib/db";
-import { requireAdminAction } from "@/lib/session";
+import { requireOwnerAction, requireStaffAction } from "@/lib/session";
 
 export type ActionResult<T = void> =
   { ok: true; data: T } | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
@@ -19,6 +19,9 @@ export class ActionError extends Error {
     this.name = "ActionError";
   }
 }
+
+/** Кому доступно действие: `staff` — вся админка (сотрудник и главный админ), `owner` — только главный админ */
+export type ActionAccess = "staff" | "owner";
 
 /** Контекст handler'а. Аудита в ctx НЕТ: handler сам вызывает `audit(ctx.userId, …, ctx.tx)`. */
 export type ActionCtx = { userId: string; tx: DbOrTx };
@@ -53,7 +56,7 @@ function toFieldErrors(error: z.ZodError): Record<string, string[]> {
 
 /**
  * Обёртка Server Action админки:
- * проверка роли → zod → транзакция с handler'ом (он же пишет аудит через `ctx.tx`)
+ * проверка роли (`opts.access`, по умолчанию `staff`) → zod → транзакция с handler'ом (он же пишет аудит через `ctx.tx`)
  * → `updateTag` для тегов и `afterCommit` (только после успешного коммита) → `{ ok: true, data }`.
  */
 export function adminAction<S extends z.ZodType, T>(
@@ -61,6 +64,8 @@ export function adminAction<S extends z.ZodType, T>(
   handler: (input: z.output<S>, ctx: ActionCtx) => Promise<T>,
   opts: {
     tags: TagsOption<z.output<S>, T>;
+    /** По умолчанию `staff`; `owner` — раздел «Пользователи» */
+    access?: ActionAccess;
     /** Сброс внешних (не `'use cache'`) кэшей — только после успешного коммита */
     afterCommit?: () => void;
   }
@@ -68,7 +73,8 @@ export function adminAction<S extends z.ZodType, T>(
   return async (input) => {
     let userId: string;
     try {
-      const session = await requireAdminAction();
+      const session =
+        opts.access === "owner" ? await requireOwnerAction() : await requireStaffAction();
       userId = session.user.id;
     } catch (error) {
       // Динамические API (prerender) и redirect не должны превращаться в «Нет доступа»

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { BulkPriceForm } from "../_components/bulk-price-form";
 import { MenuNav } from "../_components/menu-nav";
 import { flattenCategoryTree, listCategoryTree } from "../_queries";
@@ -25,7 +25,7 @@ export default function BulkPricePage() {
 }
 
 async function BulkPriceContent() {
-  await requireAdmin();
+  await requireStaff();
   const tree = await listCategoryTree();
   return <BulkPriceForm categories={flattenCategoryTree(tree)} />;
 }

@@ -13,13 +13,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { listAuthorsWithCounts } from "@/lib/blog-admin/queries";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Авторы блога" };
 
 export default async function AdminAuthorsPage() {
-  await requireAdmin();
+  await requireStaff();
   const authors = await listAuthorsWithCounts();
 
   return (

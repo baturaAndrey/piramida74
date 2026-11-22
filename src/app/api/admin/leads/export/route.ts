@@ -11,7 +11,7 @@ import { audit } from "@/lib/admin/audit";
 import { getToday } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { type Lead, type NotifyChannelStatus, leads } from "@/lib/schema";
-import { requireAdminAction, type AuthSession } from "@/lib/session";
+import { requireStaffAction, type AuthSession } from "@/lib/session";
 
 /** Верхняя граница выгрузки: защищает память сервера; больше заявок за раз не бывает */
 const MAX_EXPORT_ROWS = 20_000;
@@ -83,7 +83,7 @@ function toCsvRow(lead: Lead): string {
 export async function GET(req: Request): Promise<Response> {
   let session: AuthSession;
   try {
-    session = await requireAdminAction();
+    session = await requireStaffAction();
   } catch {
     // redirect из route handler не делаем — только 401
     return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });

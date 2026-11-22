@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { z } from "zod";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { CategoryTree } from "./_components/category-tree";
 import { ItemsList } from "./_components/items-list";
 import { MenuNav } from "./_components/menu-nav";
@@ -34,7 +34,7 @@ export default function AdminMenuPage({ searchParams }: { searchParams: SearchPa
 }
 
 async function MenuContent({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const params = await searchParams;
   const rawCat = typeof params.cat === "string" ? params.cat : undefined;
   const requestedId = z.uuid().safeParse(rawCat).success ? rawCat : undefined;

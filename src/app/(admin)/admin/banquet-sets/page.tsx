@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { SetsList } from "./_components/sets-list";
 import { listSets } from "./_queries";
 import type { Metadata } from "next";
@@ -34,7 +34,7 @@ export default function BanquetSetsPage() {
 }
 
 async function SetsContent() {
-  await requireAdmin();
+  await requireStaff();
   const sets = await listSets();
   return <SetsList sets={sets} />;
 }

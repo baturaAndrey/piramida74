@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PageHeader } from "@/components/admin/page-header";
 import type { MediaDto } from "@/lib/admin/media-dto";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { TournamentForm } from "../_components/tournament-form";
 import { nextStageTitle } from "../_lib/labels";
 import { getTournament, listSeriesOptions } from "../_queries";
@@ -38,7 +38,7 @@ export default async function NewTournamentPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  await requireAdmin();
+  await requireStaff();
   const { from } = await searchParams;
   const fromId = typeof from === "string" ? from : undefined;
   if (fromId && !z.uuid().safeParse(fromId).success) notFound();

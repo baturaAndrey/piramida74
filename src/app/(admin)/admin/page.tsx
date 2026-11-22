@@ -9,7 +9,7 @@ import { formatEventDate, getOpDate, TZ } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { LEAD_TYPE_LABELS } from "@/lib/notify/lead-templates";
 import { leads, tournaments } from "@/lib/schema";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Сводка" };
@@ -60,7 +60,7 @@ async function getDashboardData() {
 }
 
 export default async function AdminDashboardPage() {
-  await requireAdmin();
+  await requireStaff();
   const { newLeadsTotal, recentLeads, upcomingTournaments } = await getDashboardData();
 
   return (

@@ -15,7 +15,7 @@ import {
   priceGroups,
   priceGroupTiers,
 } from "@/lib/schema";
-import { requireAdminAction } from "@/lib/session";
+import { requireStaffAction } from "@/lib/session";
 import { type BulkChangeRow, computeBulkChanges } from "./_lib/bulk-price";
 import { plural } from "./_lib/labels";
 import {
@@ -702,7 +702,7 @@ export type BulkPreview = {
 /** Не мутация: проверка роли и zod без `adminAction`, без аудита и тегов. */
 export async function previewBulkPrice(input: unknown): Promise<ActionResult<BulkPreview>> {
   try {
-    await requireAdminAction();
+    await requireStaffAction();
   } catch (error) {
     unstable_rethrow(error);
     return { ok: false, error: "Нет доступа" };

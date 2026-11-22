@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { PromotionForm } from "../_components/promotion-form";
 import { listMenuCategoryOptions } from "../_queries";
 import type { PromotionInput } from "../_schema";
@@ -27,7 +27,7 @@ const EMPTY_PROMOTION: PromotionInput = {
 };
 
 export default async function NewPromotionPage() {
-  await requireAdmin();
+  await requireStaff();
   const menuCategories = await listMenuCategoryOptions();
 
   return (

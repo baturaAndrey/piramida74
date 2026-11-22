@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { SetForm } from "../_components/set-form";
 import { listVariantOptions } from "../_queries";
 import type { Metadata } from "next";
@@ -27,7 +27,7 @@ export default function NewBanquetSetPage() {
 }
 
 async function NewSetContent() {
-  await requireAdmin();
+  await requireStaff();
   const variantOptions = await listVariantOptions();
   return <SetForm set={null} variantOptions={variantOptions} />;
 }
