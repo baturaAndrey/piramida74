@@ -1,16 +1,24 @@
+import { absoluteUrl } from "@/lib/seo/metadata";
 import type { MetadataRoute } from "next";
 
+/** `/media/` и `/_next/static` открыты: картинки должны индексироваться и рендериться ботами. */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/dashboard/", "/profile/", "/chat/"],
+        disallow: [
+          "/admin",
+          "/login",
+          "/forgot-password",
+          "/reset-password",
+          "/api/",
+          "/spasibo",
+          "/blog/preview/",
+        ],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

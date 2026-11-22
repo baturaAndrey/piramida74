@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - paragraph [ref=e5]: Пирамида
+        - heading "Вход в админку" [level=1] [ref=e6]
+        - paragraph [ref=e7]: Бильярдный клуб «Пирамида»
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: Email
+          - textbox "Email" [ref=e12]:
+            - /placeholder: admin@example.ru
+        - generic [ref=e13]:
+          - generic [ref=e14]:
+            - generic [ref=e15]: Пароль
+            - link "Забыли пароль?" [ref=e16] [cursor=pointer]:
+              - /url: /forgot-password
+          - textbox "Пароль" [ref=e17]
+        - button "Войти" [ref=e18]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e24] [cursor=pointer]:
+    - generic [ref=e27]:
+      - text: Compiling
+      - generic [ref=e28]:
+        - generic [ref=e29]: .
+        - generic [ref=e30]: .
+        - generic [ref=e31]: .

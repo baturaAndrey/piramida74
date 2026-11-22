@@ -45,4 +45,21 @@ next-env.d.ts
 # uploads
 public/uploads
 
-nul
+# local uploads & build artefacts
+/.data/
+/dist/
+/playwright-report/
+/test-results/
+/blob-report/
+
+# source images (not shipped)
+/res/
+
+# e2e / QA artefacts
+/e2e/.auth/
+/e2e/screenshots/*
+!/e2e/screenshots/.gitkeep
+/.lighthouse/
+
+# agent scratch memory
+/.claude/agent-memory/

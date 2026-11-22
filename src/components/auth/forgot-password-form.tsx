@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { requestPasswordReset } from "@/lib/auth-client"
 
+const TOO_MANY_REQUESTS = 429
+
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
@@ -20,17 +22,21 @@ export function ForgotPasswordForm() {
 
     try {
       const result = await requestPasswordReset({
-        email,
+        email: email.trim(),
         redirectTo: "/reset-password",
       })
 
       if (result.error) {
-        setError(result.error.message || "Failed to send reset email")
+        setError(
+          result.error.status === TOO_MANY_REQUESTS
+            ? "Слишком много попыток. Подождите несколько минут"
+            : "Не удалось отправить ссылку. Попробуйте ещё раз"
+        )
       } else {
         setSuccess(true)
       }
     } catch {
-      setError("An unexpected error occurred")
+      setError("Не удалось отправить ссылку. Попробуйте ещё раз")
     } finally {
       setIsPending(false)
     }
@@ -38,46 +44,48 @@ export function ForgotPasswordForm() {
 
   if (success) {
     return (
-      <div className="space-y-4 w-full max-w-sm text-center">
-        <p className="text-sm text-muted-foreground">
-          If an account exists with that email, a password reset link has been sent.
-          Check your terminal for the reset URL.
+      <div className="space-y-4 text-center">
+        <p role="status" className="text-sm text-muted-foreground">
+          Если аккаунт с таким email существует, мы отправили письмо со ссылкой для сброса
+          пароля. Ссылка действует 1 час.
         </p>
-        <Link href="/login">
-          <Button variant="outline" className="w-full">
-            Back to sign in
-          </Button>
-        </Link>
+        <Button asChild variant="outline" className="w-full">
+          <Link href="/login">Вернуться ко входу</Link>
+        </Button>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           type="email"
-          placeholder="you@example.com"
+          autoComplete="email"
+          placeholder="admin@example.ru"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isPending}
+          aria-invalid={error ? true : undefined}
         />
       </div>
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Sending..." : "Send reset link"}
+        {isPending ? "Отправка…" : "Отправить ссылку"}
       </Button>
-      <div className="text-center text-sm text-muted-foreground">
-        Remember your password?{" "}
+      <p className="text-center text-sm text-muted-foreground">
+        Вспомнили пароль?{" "}
         <Link href="/login" className="text-primary hover:underline">
-          Sign in
+          Войти
         </Link>
-      </div>
+      </p>
     </form>
   )
 }
