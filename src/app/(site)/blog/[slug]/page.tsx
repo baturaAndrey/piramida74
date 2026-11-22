@@ -9,6 +9,11 @@ import { breadcrumbLd, Breadcrumbs, type BreadcrumbItem } from "@/components/blo
 import { LoadMore, pageHref } from "@/components/blog/load-more";
 import { Container } from "@/components/site/container";
 import { SectionTitle } from "@/components/site/section-title";
+import {
+  excludeShown,
+  RECENT_UNDER_ARTICLE,
+  RELATED_UNDER_ARTICLE,
+} from "@/lib/content/article-lists";
 import { roundedNowIso } from "@/lib/content/blog-now";
 import { stripMarkdown, truncateText } from "@/lib/content/markdown";
 import { parsePageParam, type PageSearchParams } from "@/lib/content/search-params";
@@ -127,17 +132,20 @@ async function SlugContent({ params, searchParams }: SlugPageProps) {
 // ── Статья ──────────────────────────────────────────────────────────────────
 
 async function ArticlePage({ article, now }: { article: ArticleDetailView; now: string }) {
-  const [related, recent] = await Promise.all([
+  const [related, recentPool] = await Promise.all([
     getRelatedArticles(
       {
         id: article.id,
         rubricSlug: article.rubric?.slug ?? null,
         tagSlugs: article.tags.map((t) => t.slug),
       },
-      now
+      now,
+      RELATED_UNDER_ARTICLE
     ),
-    getRecentArticles(4, now, article.slug),
+    // С запасом на «Похожие»: они вычитаются из «Последних», чтобы блоки не дублировались
+    getRecentArticles(RECENT_UNDER_ARTICLE + RELATED_UNDER_ARTICLE, now, article.slug),
   ]);
+  const recent = excludeShown(recentPool, related, RECENT_UNDER_ARTICLE);
 
   const url = absoluteUrl(`/blog/${article.slug}`);
   const breadcrumbs: BreadcrumbItem[] = [

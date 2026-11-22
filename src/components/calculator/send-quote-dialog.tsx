@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { restoreFocusOnClose } from "@/hooks/use-lazy-dialog";
 import type { Quote, QuoteInput } from "@/lib/calculator/types";
 import { minToClock } from "@/lib/dates";
 import { formatLongDate, formatRub, GUEST_FORMS, plural } from "./calculator-helpers";
@@ -17,17 +18,32 @@ interface SendQuoteDialogProps {
   onOpenChange: (open: boolean) => void;
   input: QuoteInput;
   quote: Quote;
+  /** Кнопка, открывшая диалог (не `DialogTrigger`): Radix сам не знает, куда вернуть фокус */
+  triggerRef: React.RefObject<HTMLElement | null>;
 }
 
 /**
  * Отправка расчёта в клуб. В заявку уходит `QuoteInput` (скрытое поле `quote`), а не сумма:
  * сервер пересчитывает смету по актуальному каталогу. Цель Метрики `calculator_submit`
  * отправляет сам `LeadForm` до перехода на /spasibo; при ошибке диалог и значения формы остаются.
+ *
+ * Модуль (Radix Dialog + LeadForm с react-hook-form, zod и маской телефона) — отдельный чанк:
+ * `CalculatorClient` грузит его лениво при первом открытии. Default export — для `React.lazy`.
  */
-export function SendQuoteDialog({ open, onOpenChange, input, quote }: SendQuoteDialogProps) {
+export default function SendQuoteDialog({
+  open,
+  onOpenChange,
+  input,
+  quote,
+  triggerRef,
+}: SendQuoteDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg"
+        // Без DialogTrigger фокус после закрытия ушёл бы на body: возвращаем на кнопку отправки
+        onCloseAutoFocus={restoreFocusOnClose(triggerRef)}
+      >
         <DialogHeader>
           <DialogTitle>Отправить расчёт в клуб</DialogTitle>
           <DialogDescription>

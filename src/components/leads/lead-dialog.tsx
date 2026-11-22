@@ -1,10 +1,12 @@
 "use client";
 
-import { lazy, Suspense, useId } from "react";
+import { Suspense, useId } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { toast } from "sonner";
 import { LazyBoundary } from "@/components/lazy-boundary";
 import { createPrefetch, useLazyDialog } from "@/hooks/use-lazy-dialog";
+import { useRetryableLazy } from "@/hooks/use-retryable-lazy";
+import { isChunkLoadError } from "@/lib/chunk-load-error";
 
 export type LeadDialogKind = "callback" | "booking" | "promo" | "tournament";
 
@@ -22,11 +24,10 @@ type LeadDialogTriggerProps = {
 /*
  * Попап (Radix Dialog + форма с react-hook-form, zod и маской телефона) — отдельный чанк.
  * Триггер есть в шапке каждой страницы, поэтому статический импорт тянул форму в начальный
- * бандл всего сайта. Повторный `import()` возвращает тот же промис — предзагрузка и
- * `React.lazy` используют один и тот же модуль.
+ * бандл всего сайта. Предзагрузка и ленивый компонент (`useRetryableLazy`) вызывают один
+ * загрузчик — наведение прогревает тот же модуль.
  */
 const loadLeadDialogContent = () => import("./lead-dialog-content");
-const LeadDialogContent = lazy(loadLeadDialogContent);
 const prefetchLeadDialog = createPrefetch(loadLeadDialogContent);
 
 /** Один тост на все триггеры страницы: повторные клики обновляют его, а не множат */
@@ -48,18 +49,23 @@ export function LeadDialogTrigger({
     contentId,
     prefetch: prefetchLeadDialog,
   });
+  const [LeadDialogContent, retryLeadDialogContent] = useRetryableLazy(loadLeadDialogContent);
 
-  // Чанк формы не загрузился (сеть, новый деплой): закрываем попап и подсказываем, что делать,
-  // вместо того чтобы ошибка всплыла до error.tsx. Тост — только для попытки открыть: после
-  // setOpen(false) граница сбрасывается и ловит ту же ошибку ещё раз уже при open === false.
-  const handleChunkError = () => {
-    if (open) {
-      toast.error(
-        "Не удалось открыть форму. Проверьте соединение и попробуйте ещё раз или позвоните нам.",
-        {
-          id: CHUNK_ERROR_TOAST_ID,
-        }
-      );
+  // Чанк формы не загрузился (сеть, новый деплой): закрываем попап с подсказкой вместо error.tsx
+  // и пересоздаём ленивый компонент, чтобы «попробуйте ещё раз» действительно загрузило чанк.
+  // Тост — только для попытки открыть: после setOpen(false) граница сбрасывается и может поймать
+  // сбой ещё раз уже при open === false. Прочие ошибки рендера — не сеть: закрываем и логируем.
+  const handleContentError = (error: unknown) => {
+    if (isChunkLoadError(error)) {
+      retryLeadDialogContent();
+      if (open) {
+        toast.error(
+          "Не удалось открыть форму. Проверьте соединение и попробуйте ещё раз или позвоните нам.",
+          { id: CHUNK_ERROR_TOAST_ID }
+        );
+      }
+    } else {
+      console.error(error);
     }
     setOpen(false);
   };
@@ -77,7 +83,7 @@ export function LeadDialogTrigger({
       )}
       {mounted ? (
         // fallback={null}: чанк уже предзагружен наведением/фокусом либо догрузится за доли секунды
-        <LazyBoundary resetKey={open} onError={handleChunkError}>
+        <LazyBoundary resetKey={open} onError={handleContentError}>
           <Suspense fallback={null}>
             <LeadDialogContent
               kind={kind}

@@ -1,10 +1,10 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { Suspense, useId, useMemo, useState } from "react";
 import { CalendarDays, Moon } from "lucide-react";
-import { ru } from "react-day-picker/locale";
+import { toast } from "sonner";
+import { LazyBoundary } from "@/components/lazy-boundary";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -14,7 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { createPrefetch } from "@/hooks/use-lazy-dialog";
+import { useRetryableLazy } from "@/hooks/use-retryable-lazy";
 import type { CalculatorUrlState } from "@/lib/calculator/url-state";
+import { isChunkLoadError } from "@/lib/chunk-load-error";
 import { clockToMin, minToClock } from "@/lib/dates";
 import {
   formatHours,
@@ -30,6 +34,29 @@ import {
 } from "./calculator-helpers";
 import { Stepper } from "./stepper";
 import { buildTimeSlots, isNightOpMin, MIDNIGHT_OP_MIN } from "./time-slots";
+
+/*
+ * react-day-picker с локалью нужен только в открытом поповере — отдельный чанк вместо начального
+ * JS /calculator. Предзагрузка — при наведении/фокусе на кнопку даты тем же загрузчиком, что у
+ * ленивого компонента (`useRetryableLazy`).
+ */
+const loadVisitDateCalendar = () => import("./visit-date-calendar");
+const prefetchVisitDateCalendar = createPrefetch(loadVisitDateCalendar);
+
+/** Один тост на повторные попытки открыть календарь */
+const CALENDAR_ERROR_TOAST_ID = "visit-date-calendar-chunk-error";
+
+/**
+ * Пока чанк грузится — блок размера календаря (248 × 291 px: p-3, ячейки 32 px, 5 недель —
+ * самый частый месяц), чтобы поповер не схлопывался и не прыгал.
+ */
+function CalendarFallback() {
+  return (
+    <div className="p-3" aria-hidden="true">
+      <Skeleton className="h-[267px] w-[224px]" />
+    </div>
+  );
+}
 
 interface DateTimeStepProps {
   state: CalculatorUrlState;
@@ -49,6 +76,7 @@ export function DateTimeStep({ state, onChange, defaultDate }: DateTimeStepProps
     guests: `${uid}-guests`,
   };
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [VisitDateCalendar, retryVisitDateCalendar] = useRetryableLazy(loadVisitDateCalendar);
 
   // Дата из URL раньше «сегодня» не ломает расчёт, но в календаре прошлое недоступно
   const visitDate = state.d ?? defaultDate;
@@ -68,6 +96,22 @@ export function DateTimeStep({ state, onChange, defaultDate }: DateTimeStepProps
     setCalendarOpen(false);
   };
 
+  // Чанк календаря не загрузился (сеть, новый деплой): закрываем поповер с подсказкой, а не
+  // роняем всю страницу в error.tsx, и пересоздаём ленивый компонент — следующее открытие
+  // загрузит чанк заново. Граница живёт внутри PopoverContent и при закрытии размонтируется,
+  // поэтому тост — только на попытку открыть. Прочие ошибки рендера — не сеть: закрываем и логируем.
+  const handleCalendarError = (error: unknown) => {
+    if (isChunkLoadError(error)) {
+      retryVisitDateCalendar();
+      toast.error("Не удалось открыть календарь. Проверьте соединение и обновите страницу.", {
+        id: CALENDAR_ERROR_TOAST_ID,
+      });
+    } else {
+      console.error(error);
+    }
+    setCalendarOpen(false);
+  };
+
   return (
     <div className="grid gap-6 sm:grid-cols-2">
       <div className="space-y-2">
@@ -79,22 +123,23 @@ export function DateTimeStep({ state, onChange, defaultDate }: DateTimeStepProps
               type="button"
               variant="outline"
               className="h-10 w-full justify-start font-normal"
+              onPointerEnter={prefetchVisitDateCalendar}
+              onFocus={prefetchVisitDateCalendar}
             >
               <CalendarDays className="text-muted-foreground size-4" aria-hidden="true" />
               {formatLongDate(visitDate)}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              locale={ru}
-              weekStartsOn={1}
-              selected={isoToLocalDate(visitDate)}
-              defaultMonth={isoToLocalDate(visitDate)}
-              onSelect={selectDate}
-              disabled={{ before: isoToLocalDate(defaultDate) }}
-              autoFocus
-            />
+            <LazyBoundary onError={handleCalendarError}>
+              <Suspense fallback={<CalendarFallback />}>
+                <VisitDateCalendar
+                  selected={isoToLocalDate(visitDate)}
+                  minDate={isoToLocalDate(defaultDate)}
+                  onSelect={selectDate}
+                />
+              </Suspense>
+            </LazyBoundary>
           </PopoverContent>
         </Popover>
       </div>

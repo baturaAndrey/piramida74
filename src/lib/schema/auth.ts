@@ -1,7 +1,7 @@
 import { bigint, boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 // ВАЖНО: id таблиц Better Auth — text (исключение из правила UUID).
-// Колонки сверены с better-auth 1.6.35 (@better-auth/core get-tables + плагины admin, two-factor).
+// Колонки сверены с better-auth 1.7.27 (@better-auth/core get-tables + плагины admin, two-factor).
 
 export const user = pgTable(
   "user",
@@ -88,7 +88,7 @@ export const verification = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  // better-auth 1.6 помечает identifier как index: true (поиск токенов сброса пароля)
+  // better-auth 1.6+ помечает identifier как index: true (поиск токенов сброса пароля)
   (t) => [index("verification_identifier_idx").on(t.identifier)]
 );
 
@@ -106,10 +106,7 @@ export const twoFactor = pgTable(
     failedVerificationCount: integer("failed_verification_count").default(0),
     lockedUntil: timestamp("locked_until"),
   },
-  (t) => [
-    index("two_factor_secret_idx").on(t.secret),
-    index("two_factor_user_id_idx").on(t.userId),
-  ]
+  (t) => [index("two_factor_secret_idx").on(t.secret), index("two_factor_user_id_idx").on(t.userId)]
 );
 
 // Better Auth rate limit в БД (storage: "database"); ключ в схеме — rateLimit

@@ -22,12 +22,24 @@ interface QuoteSummaryProps {
   quote: Quote;
   guests: number;
   onSend: () => void;
+  /** Наведение/фокус на «Отправить расчёт в клуб» — предзагрузка чанка диалога */
+  onSendIntent?: () => void;
+  /** Ref кнопки «Отправить расчёт в клуб» — на неё диалог возвращает фокус при закрытии */
+  sendButtonRef?: React.Ref<HTMLButtonElement>;
   id?: string;
   className?: string;
 }
 
 /** Итоговая смета: строки по группам, итоги, предупреждения, акции, действия */
-export function QuoteSummary({ quote, guests, onSend, id, className }: QuoteSummaryProps) {
+export function QuoteSummary({
+  quote,
+  guests,
+  onSend,
+  onSendIntent,
+  sendButtonRef,
+  id,
+  className,
+}: QuoteSummaryProps) {
   const uid = useId();
   const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
   const fallbackRef = useRef<HTMLInputElement>(null);
@@ -143,11 +155,14 @@ export function QuoteSummary({ quote, guests, onSend, id, className }: QuoteSumm
 
       <div className="mt-6 flex flex-col gap-2">
         <Button
+          ref={sendButtonRef}
           type="button"
           size="lg"
           className="hover:bg-primary-dark h-12 text-base font-semibold"
           disabled={quote.total === 0}
           onClick={onSend}
+          onPointerEnter={onSendIntent}
+          onFocus={onSendIntent}
         >
           <Send className="size-4" aria-hidden="true" />
           Отправить расчёт в клуб

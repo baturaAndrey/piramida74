@@ -21,7 +21,15 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
-            <li key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-1.5">
+            <li
+              key={`${item.label}-${index}`}
+              // Текущая страница занимает остаток строки и обрезается многоточием, а не уходит
+              // целиком на новую строку; на отдельную строку — только если места меньше 8rem
+              className={cn(
+                "flex min-w-0 items-center gap-1.5",
+                isLast && "min-w-32 flex-1 basis-0"
+              )}
+            >
               {item.href && !isLast ? (
                 <Link href={item.href} className="hover:text-primary transition-colors">
                   {item.label}

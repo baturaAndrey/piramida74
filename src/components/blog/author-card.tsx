@@ -100,7 +100,7 @@ export function AuthorCard({ author, variant = "compact", className }: AuthorCar
         )}
 
         {bioText && <p className="text-subtle line-clamp-4 text-sm leading-6">{bioText}</p>}
-        {full && author.bio && <RichText source={author.bio} className="mt-2 gap-4" />}
+        {full && author.bio && <RichText source={author.bio} className="mt-2 max-w-3xl gap-4" />}
 
         {profiles.length > 0 && (
           <ul className="mt-2 flex flex-wrap gap-2">

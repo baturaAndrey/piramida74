@@ -266,6 +266,34 @@ test.describe("Главная", () => {
     expect(errors()).toEqual([]);
   });
 
+  // Стрелки 64px стоят в боковом поле; на 1280–1365 поле 40px, и раньше стрелки заходили
+  // на карточки на ~24px. Проверяем границу диапазона и «обычные» ширины.
+  for (const width of [1280, 1365, 1366, 1920]) {
+    test(`акции ${width}px: стрелки карусели не перекрывают карточки и не выходят за экран`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openHome(page);
+      await dismissCookieBanner(page);
+
+      const section = page.locator("#discount");
+      const prev = section.getByRole("button", { name: "Предыдущая акция" });
+      const next = section.getByRole("button", { name: "Следующая акция" });
+      await expect(prev).toBeVisible();
+      await expect(next).toBeVisible();
+
+      const viewport = await section.locator('[data-slot="carousel-content"]').boundingBox();
+      const prevBox = await prev.boundingBox();
+      const nextBox = await next.boundingBox();
+      if (!viewport || !prevBox || !nextBox) throw new Error("нет геометрии карусели");
+
+      expect(prevBox.x + prevBox.width).toBeLessThanOrEqual(viewport.x);
+      expect(nextBox.x).toBeGreaterThanOrEqual(viewport.x + viewport.width);
+      expect(prevBox.x).toBeGreaterThanOrEqual(0);
+      expect(nextBox.x + nextBox.width).toBeLessThanOrEqual(width);
+    });
+  }
+
   test("мобильный 375: нет горизонтального скролла, бургер открывается и закрывается", async ({
     page,
   }) => {
@@ -296,5 +324,37 @@ test.describe("Главная", () => {
     await expect(menu).toBeHidden();
     await expect(burger).toHaveAttribute("aria-expanded", "false");
     expect(errors()).toEqual([]);
+  });
+
+  test("мобильный: после сбоя загрузки чанка меню открывается повторной попыткой без перезагрузки", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await openHome(page);
+    await dismissCookieBanner(page);
+
+    // Обрыв сети: все новые чанки после загрузки страницы (в т. ч. панель меню) не грузятся
+    const blockChunks = "**/_next/static/chunks/**";
+    await page.route(blockChunks, (route) => route.abort("internetdisconnected"));
+
+    const burger = page.getByRole("button", { name: "Меню", exact: true });
+    const menu = page.getByRole("dialog", { name: "Меню сайта" });
+
+    await burger.click();
+    const errorToast = page.getByText("Не удалось открыть меню", { exact: false });
+    await expect(errorToast).toBeVisible();
+    await expect(burger).toHaveAttribute("aria-expanded", "false");
+    await expect(menu).toHaveCount(0);
+
+    // На 375 px тост (сверху справа) перекрывает бургер, а наведение ставит его таймер на паузу:
+    // уводим курсор и ждём, пока тост закроется сам
+    await page.mouse.move(10, 700);
+    await expect(errorToast).toBeHidden({ timeout: 15_000 });
+
+    // Сеть вернулась: тот же бургер без перезагрузки страницы загружает чанк заново
+    await page.unroute(blockChunks);
+    await burger.click();
+    await expect(menu).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Прайс-лист" })).toBeVisible();
   });
 });

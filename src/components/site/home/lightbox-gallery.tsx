@@ -1,9 +1,12 @@
 "use client";
 
-import { lazy, Suspense, useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { LazyBoundary } from "@/components/lazy-boundary";
 import { Picture } from "@/components/media/picture";
+import { createPrefetch } from "@/hooks/use-lazy-dialog";
+import { useRetryableLazy } from "@/hooks/use-retryable-lazy";
+import { isChunkLoadError } from "@/lib/chunk-load-error";
 import { mediaUrl } from "@/lib/media/url";
 import type { PublicMedia } from "@/lib/queries/types";
 import { cn } from "@/lib/utils";
@@ -11,13 +14,8 @@ import type { SlideImage } from "yet-another-react-lightbox";
 
 /* Сам лайтбокс (JS + CSS) — отдельный чанк, грузится при первом открытии фото */
 const loadLightboxViewer = () => import("./lightbox-viewer");
-const LightboxViewer = lazy(loadLightboxViewer);
-
-/** Предзагрузка чанка при наведении/фокусе на фото */
-function prefetchLightbox() {
-  // Ошибку сети здесь глушим: при открытии `React.lazy` запросит модуль ещё раз
-  loadLightboxViewer().catch(() => {});
-}
+/** Предзагрузка чанка при наведении/фокусе на фото — тот же загрузчик, что у ленивого компонента */
+const prefetchLightbox = createPrefetch(loadLightboxViewer);
 
 /** Один тост на все галереи страницы: повторные клики обновляют его, а не множат */
 const VIEWER_ERROR_TOAST_ID = "lightbox-chunk-error";
@@ -90,6 +88,7 @@ const TILE_CLASS =
 export function LightboxGallery({ items, variant, className }: LightboxGalleryProps) {
   const [index, setIndex] = useState(-1);
   const [viewerMounted, setViewerMounted] = useState(false);
+  const [LightboxViewer, retryLightboxViewer] = useRetryableLazy(loadLightboxViewer);
   const [main, ...rest] = items;
   if (!main) return null;
 
@@ -101,13 +100,21 @@ export function LightboxGallery({ items, variant, className }: LightboxGalleryPr
     setViewerMounted(true);
     setIndex(i);
   };
-  // Чанк лайтбокса не загрузился: фото остаются в сетке, просмотр закрывается без error.tsx.
-  // Тост — только при попытке открыть (после закрытия граница ловит ту же ошибку повторно)
-  const handleViewerError = () => {
-    if (index >= 0) {
-      toast.error("Не удалось открыть просмотр фото. Проверьте соединение и попробуйте ещё раз.", {
-        id: VIEWER_ERROR_TOAST_ID,
-      });
+  // Чанк лайтбокса не загрузился: фото остаются в сетке, просмотр закрывается без error.tsx,
+  // ленивый компонент пересоздаётся — следующий клик загрузит чанк заново. Тост — только при
+  // попытке открыть (после закрытия граница может поймать сбой повторно). Прочие ошибки
+  // рендера — не сеть: просмотр тоже закрываем, но ошибку логируем.
+  const handleViewerError = (error: unknown) => {
+    if (isChunkLoadError(error)) {
+      retryLightboxViewer();
+      if (index >= 0) {
+        toast.error(
+          "Не удалось открыть просмотр фото. Проверьте соединение и попробуйте ещё раз.",
+          { id: VIEWER_ERROR_TOAST_ID }
+        );
+      }
+    } else {
+      console.error(error);
     }
     setIndex(-1);
   };

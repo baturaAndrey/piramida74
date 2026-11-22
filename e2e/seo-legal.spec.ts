@@ -136,7 +136,9 @@ test.describe("SEO и юридические страницы", () => {
       .getByRole("contentinfo")
       .getByRole("button", { name: "Политика конфиденциальности" })
       .click();
-    const dialog = page.getByRole("dialog");
+    // Плашка cookie — тоже role="dialog", а попап политики грузится отдельным чанком после
+    // клика (до его появления плашка ещё не скрыта модалкой): берём именно попап
+    const dialog = page.getByRole("dialog").and(page.locator(':not([aria-label="Cookie"])'));
     await expect(dialog).toBeVisible();
     const dialogText = (await dialog.innerText()).replace(/\s+/g, " ");
     for (const paragraph of paragraphs) {

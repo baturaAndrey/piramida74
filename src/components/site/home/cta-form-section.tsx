@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { connection } from "next/server";
-import { LeadForm } from "@/components/leads/lead-form";
 import { Picture } from "@/components/media/picture";
+import { CtaLeadForm } from "@/components/site/home/cta-lead-form";
 import { Reveal } from "@/components/site/reveal";
 import { SectionTitle } from "@/components/site/section-title";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +14,8 @@ const STATIC_PERSON = "/images/home/cta-person.webp";
 
 /**
  * Поля LeadForm крупнее стандартных (как в старом сайте); внутренности компонента не меняем —
- * размер задаётся через селекторы потомков обёртки.
+ * размер задаётся через селекторы потомков обёртки. Те же высоты повторяет заглушка в
+ * cta-lead-form.tsx (форма грузится лениво) — меняйте их вместе.
  */
 const FORM_CLASS =
   "[&_input:not([type=checkbox]):not([tabindex='-1'])]:h-[clamp(48px,5.2vw,100px)] [&_input]:rounded-[12px] [&_input]:font-sans [&_button[type=submit]]:h-[clamp(52px,4.7vw,90px)] [&_button[type=submit]]:w-full [&_button[type=submit]]:rounded-[12px] lg:[&_button[type=submit]]:text-2xl lg:[&_button[type=submit]]:font-semibold";
@@ -101,7 +102,7 @@ export async function CtaFormSection() {
             <h3 className="mb-[15px] text-[clamp(20px,1.67vw,32px)] leading-[1.56] font-semibold">
               Заполните форму
             </h3>
-            <LeadForm
+            <CtaLeadForm
               type="booking"
               block="Бильярдная забронировать стол"
               formTitle="Хотите забронировать стол"

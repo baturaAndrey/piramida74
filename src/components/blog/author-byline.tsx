@@ -61,12 +61,25 @@ export function AuthorByline({
           </span>
         </>
       )}
-      {parts.map((part, i) => (
-        <span key={i} className="inline-flex items-center gap-2">
-          {(author || i > 0) && <span aria-hidden="true">·</span>}
-          {part}
-        </span>
-      ))}
+      {/*
+        Дата и время чтения — одной группой: на мобильном она всегда с новой строки и без
+        ведущей «·» (иначе при переносе строка начиналась бы с разделителя), с `sm` — в строку с автором
+      */}
+      <span
+        className={cn("inline-flex flex-wrap items-center gap-x-2", author && "w-full sm:w-auto")}
+      >
+        {parts.map((part, i) => (
+          <span key={i} className="inline-flex items-center gap-2">
+            {author && i === 0 && (
+              <span aria-hidden="true" className="hidden sm:inline">
+                ·
+              </span>
+            )}
+            {i > 0 && <span aria-hidden="true">·</span>}
+            {part}
+          </span>
+        ))}
+      </span>
     </div>
   );
 }

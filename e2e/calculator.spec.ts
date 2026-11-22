@@ -35,6 +35,20 @@ test.describe("Калькулятор", () => {
     await expect(page.getByLabel("Столов", { exact: true })).toHaveText("1");
   });
 
+  test("диалог отправки расчёта возвращает фокус на кнопку «Отправить расчёт в клуб»", async ({
+    page,
+  }) => {
+    await openCalculator(page, { d: MONDAY, t: "12:00", h: 2, g: 4 });
+    const sendButton = summary(page).getByRole("button", { name: "Отправить расчёт в клуб" });
+    const dialog = page.getByRole("dialog", { name: "Отправить расчёт в клуб" });
+
+    await sendButton.click();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(sendButton).toBeFocused();
+  });
+
   test("переход тарифа посреди брони: пн 15:00, 2 ч → 580 + 640 = 1220 ₽", async ({ page }) => {
     await openCalculator(page, { d: MONDAY, t: "15:00", h: 2 });
     await expectTotal(page, 1220);

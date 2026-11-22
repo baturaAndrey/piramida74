@@ -1,20 +1,35 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { useQueryStates } from "nuqs";
+import { toast } from "sonner";
+import { LazyBoundary } from "@/components/lazy-boundary";
 import { Button } from "@/components/ui/button";
+import { createPrefetch } from "@/hooks/use-lazy-dialog";
+import { useRetryableLazy } from "@/hooks/use-retryable-lazy";
 import { calculateQuote } from "@/lib/calculator/calculate";
 import type { CalculatorCatalog } from "@/lib/calculator/types";
 import { calculatorParsers, toQuoteInput } from "@/lib/calculator/url-state";
+import { isChunkLoadError } from "@/lib/chunk-load-error";
 import { formatRub, setKeyQty, toQtyMap, type CalculatorPatch } from "./calculator-helpers";
 import { DateTimeStep } from "./date-time-step";
 import { HallStep } from "./hall-step";
 import { MenuPicker } from "./menu-picker";
 import { QuoteSummary } from "./quote-summary";
-import { SendQuoteDialog } from "./send-quote-dialog";
 import { SetsPicker } from "./sets-picker";
 
 const SUMMARY_ID = "quote-summary";
+
+/*
+ * Диалог отправки расчёта (Radix Dialog + форма с react-hook-form, zod и маской телефона)
+ * открывается только по кнопке — отдельный чанк вместо начального JS /calculator. Предзагрузка —
+ * при наведении/фокусе на кнопку тем же загрузчиком, что у ленивого компонента (`useRetryableLazy`).
+ */
+const loadSendQuoteDialog = () => import("./send-quote-dialog");
+const prefetchSendQuoteDialog = createPrefetch(loadSendQuoteDialog);
+
+/** Один тост на повторные попытки открыть диалог */
+const SEND_DIALOG_ERROR_TOAST_ID = "send-quote-dialog-chunk-error";
 
 interface CalculatorClientProps {
   catalog: CalculatorCatalog;
@@ -34,6 +49,11 @@ export function CalculatorClient({ catalog, defaultDate }: CalculatorClientProps
     scroll: false,
   });
   const [sendOpen, setSendOpen] = useState(false);
+  // Диалог монтируется при первом открытии и дальше остаётся смонтированным (анимация закрытия)
+  const [sendMounted, setSendMounted] = useState(false);
+  const [SendQuoteDialog, retrySendQuoteDialog] = useRetryableLazy(loadSendQuoteDialog);
+  // Кнопка «Отправить расчёт в клуб» открывает диалог без DialogTrigger: на неё возвращается фокус
+  const sendButtonRef = useRef<HTMLButtonElement>(null);
 
   const input = useMemo(
     () => toQuoteInput(state, catalog, defaultDate),
@@ -59,6 +79,30 @@ export function CalculatorClient({ catalog, defaultDate }: CalculatorClientProps
     },
     [setState]
   );
+
+  const openSendDialog = () => {
+    setSendMounted(true);
+    setSendOpen(true);
+  };
+
+  // Чанк диалога не загрузился (сеть, новый деплой): закрываем с подсказкой вместо error.tsx и
+  // пересоздаём ленивый компонент, чтобы следующее открытие загрузило чанк заново. Тост — только
+  // для попытки открыть: после setSendOpen(false) граница сбрасывается и может поймать сбой ещё
+  // раз уже при закрытом диалоге. Прочие ошибки рендера — не сеть: закрываем и логируем.
+  const handleSendDialogError = (error: unknown) => {
+    if (isChunkLoadError(error)) {
+      retrySendQuoteDialog();
+      if (sendOpen) {
+        toast.error(
+          "Не удалось открыть форму. Проверьте соединение и обновите страницу или позвоните нам.",
+          { id: SEND_DIALOG_ERROR_TOAST_ID }
+        );
+      }
+    } else {
+      console.error(error);
+    }
+    setSendOpen(false);
+  };
 
   const scrollToSummary = () => {
     document.getElementById(SUMMARY_ID)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -91,7 +135,9 @@ export function CalculatorClient({ catalog, defaultDate }: CalculatorClientProps
           className="scroll-mt-24"
           quote={quote}
           guests={input.guests}
-          onSend={() => setSendOpen(true)}
+          onSend={openSendDialog}
+          onSendIntent={prefetchSendQuoteDialog}
+          sendButtonRef={sendButtonRef}
           id={SUMMARY_ID}
         />
       </div>
@@ -110,7 +156,20 @@ export function CalculatorClient({ catalog, defaultDate }: CalculatorClientProps
         </div>
       </div>
 
-      <SendQuoteDialog open={sendOpen} onOpenChange={setSendOpen} input={input} quote={quote} />
+      {sendMounted ? (
+        // fallback={null}: чанк уже предзагружен наведением/фокусом либо догрузится за доли секунды
+        <LazyBoundary resetKey={sendOpen} onError={handleSendDialogError}>
+          <Suspense fallback={null}>
+            <SendQuoteDialog
+              open={sendOpen}
+              onOpenChange={setSendOpen}
+              input={input}
+              quote={quote}
+              triggerRef={sendButtonRef}
+            />
+          </Suspense>
+        </LazyBoundary>
+      ) : null}
     </div>
   );
 }

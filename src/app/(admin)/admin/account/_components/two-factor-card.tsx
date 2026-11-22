@@ -417,8 +417,11 @@ export function TwoFactorCard({ enabled, email }: TwoFactorCardProps) {
   async function runPasswordAction(action: PasswordAction, password: string) {
     try {
       if (action === "enable") {
-        const { data, error } = await authClient.twoFactor.enable({ password });
+        // better-auth 1.7: ответ — дискриминированный union по `method`; totpURI и резервные
+        // коды есть только у "totp" (он же метод по умолчанию, задаём явно)
+        const { data, error } = await authClient.twoFactor.enable({ password, method: "totp" });
         if (error) return describeAuthError(error, "Не удалось начать настройку 2FA");
+        if (data.method !== "totp") return "Не удалось начать настройку 2FA";
         setView({ kind: "setup", totpURI: data.totpURI, backupCodes: data.backupCodes });
         return null;
       }

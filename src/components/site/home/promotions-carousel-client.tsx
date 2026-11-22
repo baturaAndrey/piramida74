@@ -27,11 +27,15 @@ type PromotionsCarouselClientProps = {
 const ARROW_CLASS =
   "bg-primary hover:bg-primary-dark absolute top-1/2 z-10 hidden size-16 -translate-y-1/2 items-center justify-center rounded-full text-white transition-colors xl:flex";
 /**
- * Стрелки (64px) — в боковом поле сетки, по его центру. Если поле уже стрелки (40px на 1280–1365),
- * стрелка прижимается к краю экрана и немного заходит на карусель, но не выходит за viewport.
+ * Стрелки (64px) стоят по центру бокового «коридора» `--arrow-lane` между краем рамки и карточкой.
+ * Коридор не уже 70px (стрелка + 3px зазора с каждой стороны), поэтому стрелка никогда
+ * не заходит на карточку. При поле ≥70px (≥1366) коридор = `--gutter` и карточки стоят по сетке;
+ * при поле 40px (1280–1365) недостающие 30px добираются внутренним отступом карусели.
  */
-const ARROW_OFFSET_LEFT = "-left-[min(calc(var(--gutter)/2+32px),var(--gutter))]";
-const ARROW_OFFSET_RIGHT = "-right-[min(calc(var(--gutter)/2+32px),var(--gutter))]";
+const ARROW_LANE = "xl:[--arrow-lane:max(var(--gutter),70px)]";
+const ARROW_LANE_INSET = "xl:px-[calc(var(--arrow-lane)-var(--gutter))]";
+const ARROW_OFFSET_LEFT = "left-[calc(var(--arrow-lane)/-2-32px)]";
+const ARROW_OFFSET_RIGHT = "right-[calc(var(--arrow-lane)/-2-32px)]";
 
 /** Подписка на события embla для `useSyncExternalStore` (без setState в эффектах). */
 function useEmblaSnapshot<T>(
@@ -66,7 +70,7 @@ export function PromotionsCarouselClient({ items }: PromotionsCarouselClientProp
   const selected = useEmblaSnapshot(api, (a) => a?.selectedScrollSnap() ?? 0, 0);
 
   return (
-    <div>
+    <div className={cn(interactive && [ARROW_LANE, ARROW_LANE_INSET])}>
       {interactive ? (
         <p className="text-muted-foreground mb-3 flex items-center justify-center gap-2 text-xs lg:hidden">
           <span>Листайте влево/вправо</span>
