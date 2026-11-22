@@ -13,7 +13,7 @@ const NOT_FOUND_REWRITE_PATH = "/_not-found-blog";
 
 /**
  * Только оптимистичный редирект по наличию cookie сессии (без обращения к БД).
- * Права проверяются в страницах (`requireAdmin`) и Server Actions (`requireAdminAction`).
+ * Права проверяются в страницах (`requireStaff`) и Server Actions (`requireStaffAction`).
  */
 function adminProxy(request: NextRequest) {
   if (!getSessionCookie(request)) {

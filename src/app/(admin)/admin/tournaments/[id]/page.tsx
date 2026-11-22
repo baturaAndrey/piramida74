@@ -5,7 +5,7 @@ import { z } from "zod";
 import { PageHeader } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
 import { formatEventDate } from "@/lib/dates";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { DeleteTournamentButton, TournamentForm } from "../_components/tournament-form";
 import { getTournament, listSeriesOptions } from "../_queries";
 import type { TournamentInput } from "../_schema";
@@ -14,7 +14,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Турнир" };
 
 export default async function EditTournamentPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 

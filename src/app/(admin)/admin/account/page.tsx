@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { ChangePasswordForm } from "./_components/change-password-form";
 import { TwoFactorCard } from "./_components/two-factor-card";
 import type { Metadata } from "next";
@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Аккаунт" };
 
 async function AccountContent() {
-  const session = await requireAdmin();
+  const session = await requireStaff();
   const { email, twoFactorEnabled } = session.user;
 
   return (

@@ -75,6 +75,7 @@ async function main() {
         role: "admin",
         banned: false,
         twoFactorEnabled: false,
+        mustChangePassword: false,
       })
       await tx.insert(account).values({
         id: randomUUID(),
@@ -88,7 +89,15 @@ async function main() {
 
     await tx
       .update(user)
-      .set({ role: "admin", banned: false, banReason: null, banExpires: null, emailVerified: true })
+      .set({
+        role: "admin",
+        banned: false,
+        banReason: null,
+        banExpires: null,
+        emailVerified: true,
+        // Восстановление доступа владельца: пароль он задаёт сам, принудительная смена не нужна
+        mustChangePassword: false,
+      })
       .where(eq(user.id, existing.id))
 
     const [credential] = await tx

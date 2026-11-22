@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { GalleryEditor, GalleryNav } from "./_components/gallery-editor";
 import { GALLERY_KEY_RE } from "./_lib/labels";
 import { getAdminGallery, listAdminGalleries } from "./_queries";
@@ -21,7 +21,7 @@ export default function AdminGalleriesPage({ searchParams }: { searchParams: Sea
 }
 
 async function GalleriesContent({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const params = await searchParams;
   const rawKey = typeof params.key === "string" ? params.key : undefined;
   if (rawKey !== undefined && !GALLERY_KEY_RE.test(rawKey)) notFound();

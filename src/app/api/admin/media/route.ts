@@ -3,7 +3,7 @@ import { toMediaDto } from "@/lib/admin/media-dto";
 import { listMedia } from "@/lib/admin/media-queries";
 import { saveImage } from "@/lib/media/storage";
 import { MAX_IMAGE_BYTES, MediaValidationError } from "@/lib/media/validate";
-import { requireAdminAction, type AuthSession } from "@/lib/session";
+import { requireStaffAction, type AuthSession } from "@/lib/session";
 
 const DEFAULT_FOLDER = "general";
 const MAX_ALT_LENGTH = 300;
@@ -12,7 +12,7 @@ const MAX_BODY_BYTES = MAX_IMAGE_BYTES + 1024 * 1024;
 
 async function getAdminSession(): Promise<AuthSession | null> {
   try {
-    return await requireAdminAction();
+    return await requireStaffAction();
   } catch {
     return null;
   }

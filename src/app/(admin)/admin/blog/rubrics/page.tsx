@@ -1,13 +1,13 @@
 import { RubricManager } from "@/components/admin/blog/rubric-manager";
 import { PageHeader } from "@/components/admin/page-header";
 import { listRubricsWithCounts } from "@/lib/blog-admin/queries";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Рубрики блога" };
 
 export default async function AdminRubricsPage() {
-  await requireAdmin();
+  await requireStaff();
   const rubrics = await listRubricsWithCounts();
   return (
     <div className="mx-auto max-w-4xl space-y-6">

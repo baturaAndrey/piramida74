@@ -17,6 +17,7 @@ import {
   Settings,
   Trophy,
   UserCog,
+  Users,
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
@@ -87,8 +88,12 @@ const NAV_ITEMS: NavItem[] = [
   { title: "Медиатека", href: "/admin/media", icon: FileImage },
   { title: "Настройки", href: "/admin/settings", icon: Settings },
   { title: "Юр. документы", href: "/admin/legal", icon: FileText },
-  { title: "Аккаунт", href: "/admin/account", icon: UserCog },
 ];
+
+/** Только главному админу: пункт выводит слот `ownerItems` (сервер проверяет роль) */
+const OWNER_NAV_ITEMS: NavItem[] = [{ title: "Пользователи", href: "/admin/users", icon: Users }];
+
+const ACCOUNT_NAV_ITEM: NavItem = { title: "Аккаунт", href: "/admin/account", icon: UserCog };
 
 /** `/admin/menu` активен на `/admin/menu/…`, но не на `/admin/menu-something` */
 function isActivePath(pathname: string, href: string, exact = false): boolean {
@@ -96,15 +101,65 @@ function isActivePath(pathname: string, href: string, exact = false): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** Пункт меню (с подпунктами); закрывает мобильное меню после перехода */
+function NavMenuItem({ item, leadsBadge }: { item: NavItem; leadsBadge?: ReactNode }) {
+  const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+  const closeMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+  const active = isActivePath(pathname, item.href, item.exact);
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+        <Link href={item.href} onClick={closeMobile} aria-current={active ? "page" : undefined}>
+          <item.icon className="h-4 w-4" aria-hidden />
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+      {item.badge === "leads" && leadsBadge ? (
+        <SidebarMenuBadge>{leadsBadge}</SidebarMenuBadge>
+      ) : null}
+      {item.children ? (
+        <SidebarMenuSub>
+          {item.children.map((child) => {
+            const childActive = isActivePath(pathname, child.href, child.exact);
+            return (
+              <SidebarMenuSubItem key={child.href}>
+                <SidebarMenuSubButton asChild isActive={childActive}>
+                  <Link
+                    href={child.href}
+                    onClick={closeMobile}
+                    aria-current={childActive ? "page" : undefined}
+                  >
+                    <span>{child.title}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            );
+          })}
+        </SidebarMenuSub>
+      ) : null}
+    </SidebarMenuItem>
+  );
+}
+
+/** Пункты главного админа («Пользователи»); layout рендерит их, только если роль — admin */
+export function AdminOwnerNavItems() {
+  return OWNER_NAV_ITEMS.map((item) => <NavMenuItem key={item.href} item={item} />);
+}
+
 export type AdminSidebarProps = {
   /** Бейдж числа новых заявок (серверный компонент в Suspense) */
   leadsBadge?: ReactNode;
   /** Пользователь и выход (серверный компонент в Suspense) */
   userMenu?: ReactNode;
+  /** Пункты только для главного админа (серверный компонент в Suspense) */
+  ownerItems?: ReactNode;
 };
 
-export function AdminSidebar({ leadsBadge, userMenu }: AdminSidebarProps) {
-  const pathname = usePathname();
+export function AdminSidebar({ leadsBadge, userMenu, ownerItems }: AdminSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar();
   // На мобильных меню — выезжающая панель: закрываем её после перехода
   const closeMobile = () => {
@@ -127,46 +182,11 @@ export function AdminSidebar({ leadsBadge, userMenu }: AdminSidebarProps) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV_ITEMS.map((item) => {
-                const active = isActivePath(pathname, item.href, item.exact);
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
-                      <Link
-                        href={item.href}
-                        onClick={closeMobile}
-                        aria-current={active ? "page" : undefined}
-                      >
-                        <item.icon className="h-4 w-4" aria-hidden />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {item.badge === "leads" && leadsBadge ? (
-                      <SidebarMenuBadge>{leadsBadge}</SidebarMenuBadge>
-                    ) : null}
-                    {item.children ? (
-                      <SidebarMenuSub>
-                        {item.children.map((child) => {
-                          const childActive = isActivePath(pathname, child.href, child.exact);
-                          return (
-                            <SidebarMenuSubItem key={child.href}>
-                              <SidebarMenuSubButton asChild isActive={childActive}>
-                                <Link
-                                  href={child.href}
-                                  onClick={closeMobile}
-                                  aria-current={childActive ? "page" : undefined}
-                                >
-                                  <span>{child.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    ) : null}
-                  </SidebarMenuItem>
-                );
-              })}
+              {NAV_ITEMS.map((item) => (
+                <NavMenuItem key={item.href} item={item} leadsBadge={leadsBadge} />
+              ))}
+              {ownerItems}
+              <NavMenuItem item={ACCOUNT_NAV_ITEM} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

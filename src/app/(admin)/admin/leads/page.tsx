@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { LeadsFilters } from "./_components/leads-filters";
 import { LeadsTable } from "./_components/leads-table";
 import {
@@ -34,7 +34,7 @@ function pageHref(values: LeadsFilterValues, page: number): string {
 }
 
 async function LeadsContent({ searchParams }: PageProps) {
-  await requireAdmin();
+  await requireStaff();
   const params = await searchParams;
   const values = getLeadsFilterValues(params);
   const { rows, total, page, pageCount } = await listLeads(params, parseLeadsPage(params));

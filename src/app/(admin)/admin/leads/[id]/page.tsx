@@ -8,8 +8,9 @@ import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { NotifyChannelStatus } from "@/lib/schema";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { cn } from "@/lib/utils";
+import { DeleteLeadsButton } from "../_components/delete-leads-button";
 import { LeadStatusSelect } from "../_components/lead-status-select";
 import { QuoteSnapshotView } from "../_components/quote-snapshot-view";
 import { ResendNotificationButton } from "../_components/resend-notification-button";
@@ -211,7 +212,7 @@ function ChannelStatus({
 }
 
 async function LeadContent({ params }: PageProps) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const lead = await getLead(id);
   if (!lead) notFound();
@@ -242,12 +243,15 @@ async function LeadContent({ params }: PageProps) {
           </span>
         }
         actions={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/leads">
-              <ArrowLeft className="h-4 w-4" aria-hidden />
-              Назад к списку
-            </Link>
-          </Button>
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/leads">
+                <ArrowLeft className="h-4 w-4" aria-hidden />
+                Назад к списку
+              </Link>
+            </Button>
+            <DeleteLeadsButton ids={[lead.id]} label="Удалить заявку" redirectTo="/admin/leads" />
+          </>
         }
       />
 

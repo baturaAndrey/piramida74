@@ -13,14 +13,14 @@ import {
   listTagOptions,
 } from "@/lib/blog-admin/queries";
 import { toLocalInputValue } from "@/lib/content/local-datetime";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import type { ArticleInput } from "@/lib/validation/blog";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Статья" };
 
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 

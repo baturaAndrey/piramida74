@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { count, eq } from "drizzle-orm";
 import { ExternalLink } from "lucide-react";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { AdminOwnerNavItems, AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminUserMenu } from "@/components/admin/admin-user-menu";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -11,7 +11,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db";
 import { leads } from "@/lib/schema";
-import { requireAdmin } from "@/lib/session";
+import { isOwnerSession, requireStaff } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -20,16 +20,16 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Защита «в глубину»: страницы всё равно обязаны сами вызывать `requireAdmin()` первой строкой. */
+/** Защита «в глубину»: страницы всё равно обязаны сами вызывать `requireStaff()` первой строкой. */
 async function AdminGate({ children }: { children: ReactNode }) {
-  await requireAdmin();
+  await requireStaff();
   return <>{children}</>;
 }
 
 /** Число новых заявок (без кэша); 0 — бейдж не показывается. */
 async function NewLeadsBadge() {
   await connection();
-  await requireAdmin();
+  await requireStaff();
   const [row] = await db.select({ value: count() }).from(leads).where(eq(leads.status, "new"));
   const total = row?.value ?? 0;
   if (total === 0) return null;
@@ -40,8 +40,14 @@ async function NewLeadsBadge() {
   );
 }
 
+/** «Пользователи» в меню — только главному админу (страница и действия проверяют роль сами) */
+async function OwnerNavItems() {
+  const session = await requireStaff();
+  return isOwnerSession(session) ? <AdminOwnerNavItems /> : null;
+}
+
 async function SidebarUser() {
-  const session = await requireAdmin();
+  const session = await requireStaff();
   return <AdminUserMenu name={session.user.name} email={session.user.email} />;
 }
 
@@ -65,6 +71,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         leadsBadge={
           <Suspense fallback={null}>
             <NewLeadsBadge />
+          </Suspense>
+        }
+        ownerItems={
+          <Suspense fallback={null}>
+            <OwnerNavItems />
           </Suspense>
         }
         userMenu={

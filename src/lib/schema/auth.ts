@@ -23,6 +23,8 @@ export const user = pgTable(
     banExpires: timestamp("ban_expires"),
     // plugin: twoFactor
     twoFactorEnabled: boolean("two_factor_enabled").default(false),
+    // additionalFields (src/lib/auth.ts): временный пароль от главного админа — сменить при входе
+    mustChangePassword: boolean("must_change_password").default(false).notNull(),
   },
   (t) => [index("user_email_idx").on(t.email)]
 );

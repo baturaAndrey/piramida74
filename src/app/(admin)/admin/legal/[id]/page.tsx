@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TZ } from "@/lib/dates";
 import { getClientEnv } from "@/lib/env";
 import { getSettings } from "@/lib/queries/settings";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { LegalForm, LegalMarkdown } from "../_components/legal-form";
 import { getLegalDocumentById } from "../_queries";
 import {
@@ -31,7 +31,7 @@ const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
 });
 
 async function LegalDocumentContent({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 

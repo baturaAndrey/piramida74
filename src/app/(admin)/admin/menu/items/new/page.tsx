@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { z } from "zod";
 import { AdminPageSkeleton } from "@/components/admin/admin-page-skeleton";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireAdmin } from "@/lib/session";
+import { requireStaff } from "@/lib/session";
 import { ItemForm } from "../../_components/item-form";
 import { flattenCategoryTree, listCategoryTree, listPriceGroups } from "../../_queries";
 import type { Metadata } from "next";
@@ -20,7 +20,7 @@ export default function NewMenuItemPage({ searchParams }: { searchParams: Search
 }
 
 async function NewItemContent({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const params = await searchParams;
   const rawCat = typeof params.cat === "string" ? params.cat : undefined;
   const categoryId = rawCat && z.uuid().safeParse(rawCat).success ? rawCat : null;
